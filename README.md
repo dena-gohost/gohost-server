@@ -2,12 +2,18 @@
 
 ## 使い方
 
-### 推奨
+### 推奨環境
 
 mysqlのdockerコンテナを立ち上げた状態でgoをローカルにホストする
 
 ```shell
 $ docker-compose up
+```
+
+### 立ち上げ
+
+```shell
+$ go run ./cmd/gohost-server/main.go
 ```
 
 ### sqlからmigration

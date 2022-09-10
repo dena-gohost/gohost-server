@@ -2,8 +2,9 @@ package handler
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 func (s *Server) PostLogout(ec echo.Context) error {
@@ -16,4 +17,3 @@ func (s *Server) PostLogout(ec echo.Context) error {
 
 	return ec.JSON(http.StatusOK, &msg)
 }
-

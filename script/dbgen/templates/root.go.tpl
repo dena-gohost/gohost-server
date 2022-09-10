@@ -8,7 +8,7 @@ import (
     "time"
 
     "github.com/Masterminds/squirrel"
-    "github.com/gohost-server/gohost-server/pkg/dberror"
+    "github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
 {{ template "metadata" . }}
