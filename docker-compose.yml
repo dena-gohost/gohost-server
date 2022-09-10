@@ -1,5 +1,14 @@
-version: '3'
+version: "3"
 services:
+  gh-adminer:
+    container_name: gh-adminer
+    hostname: adminer
+    image: adminer:4.8.1
+    restart: always
+    ports:
+      - 25750:8080
+    depends_on:
+      - db
   db:
     image: mysql:latest
     restart: always
