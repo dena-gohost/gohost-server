@@ -5,6 +5,36 @@ info:
   version: 0.0.1
 paths:
   /register:
+    get:
+      summary: "ユーザー登録に必要な情報"
+      tags:
+        - "auth"
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  universities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                  genders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
     post:
       summary: "新規ユーザー登録"
       tags:
@@ -59,6 +89,139 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+  /spots:
+    get:
+      summary: "肝試しスポットの一覧取得"
+      tags:
+        - "match"
+      parameters:
+        - in: query
+          required: true
+          name: date
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Spot"
+                  total_count:
+                    type: integer
+    post:
+      summary: "肝試しスポットの追加"
+      tags:
+        - "match"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Spot"
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Spot"
+  /spots/{spot_id}:
+    parameters:
+      - in: path
+        required: true
+        name: spot_id
+        schema:
+          type: integer
+    get:
+      summary: "肝試しスポット"
+      tags:
+        - "match"
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Spot"
+  /spots/{spot_id}/entry:
+    parameters:
+      - in: path
+        required: true
+        name: spot_id
+        schema:
+          type: string
+    post:
+      summary: "どの肝試しスポットにするかを決定"
+      tags:
+        - "match"
+      requestBody:
+        description: エントリー情報
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /plans:
+    get:
+      summary: "肝試しの確定日程の情報一覧(過去情報)"
+      tags:
+        - "plan"
+      parameters:
+        - in: query
+          required: true
+          name: date
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Spot"
+                  total_count:
+                    type: integer
+  /plans/{plan_id}:
+    parameters:
+      - in: path
+        required: true
+        name: plan_id
+        schema:
+          type: string
+    get:
+      summary: "肝試しの確定日程の詳細情報"
+      tags:
+        - "plan"
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Spot"
 components:
   schemas:
     User:
@@ -70,10 +233,51 @@ components:
           type: string
         last_name:
           type: string
+        user_name:
+          type: string
         email:
           type: string
         password:
           type: string
+        university_id:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        year:
+          type: integer
+          description: "学年"
+        gender_id:
+          type: string
+        icon_url:
+          type: string
+          description: "アイコンのURLなど"
+        instagram_id:
+          type: string
+          description: "インスタグラムのID"
+    Spot:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        image_urls:
+          type: array
+          items:
+            type: string
+            description: "心霊スポットのURL"
+        address:
+          type: string
+          description: "住所"
+        prefecture:
+          type: string
+          description: "都道府県"
+        rate:
+          type: number
+          description: "評価"
     Message:
       type: object
       properties:

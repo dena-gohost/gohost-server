@@ -24,7 +24,7 @@ $ go run ./cmd/gohost-server/main.go
 $ curl -XPOST \
   -H "content-type: application/json" \
   -d '{"first_name": "dena", "last_name": "gohost", "email": "gohost@dena.co.jp", "password": "passw0rd"}' \
-  localhost:5000/register
+  http://54.65.169.242/register
 ```
 
 #### login
