@@ -20,6 +20,16 @@ $ go run ./cmd/gohost-server/main.go
 
 #### register
 
+get
+
+```shell
+$ curl -XGET \
+  -H "content-type: application/json" \
+  localhost:5050/register
+```
+
+post
+
 ```shell
 $ curl -XPOST \
   -H "content-type: application/json" \
@@ -37,7 +47,17 @@ $ curl -XPOST \
   localhost:5050/login
 ```
 
+`Set-Cookie: ` 以降をコピーする. 変数 `COOKIE`に代入する
+
+macなら次の通り
+
+```shell
+$ COOKIE="$(pbpaste)"
+```
+
 #### spots
+
+心霊スポット一覧
 
 ```shell
 $ curl \
@@ -46,19 +66,62 @@ $ curl \
   "localhost:5050/spots?date=2022-09-10&limit=3"
 ```
 
+心霊スポット詳細
+
 ```shell
 $ curl \
   -H "cookie: ${COOKIE}" \
   -H "content-type: application/json" \
-  "localhost:5050/spots/7e684568-5ecf-4c65-9360-3c8b771b21e7"
+  "localhost:5050/spots/7ed0c28c-890a-4c3e-8c0d-6db93969168c"
 ```
+
+エントリー
 
 ```shell
 $ curl -XPOST \
   -H "cookie: ${COOKIE}" \
   -H "content-type: application/json" \
   -d '{"date": "2022-09-10"}' \
-  "localhost:5050/spots/7e684568-5ecf-4c65-9360-3c8b771b21e7/entry"
+  "localhost:5050/spots/7ed0c28c-890a-4c3e-8c0d-6db93969168c/entry"
+```
+
+#### plan
+
+プラン確認
+
+```shell
+$ curl -XGET \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  localhost:5050/plan
+```
+
+プランキャンセル
+
+```shell
+$ curl -XPOST \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  localhost:5050/plan/cancel
+```
+
+プラン完了(GET)
+
+```shell
+$ curl -XGET \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  localhost:5050/plan/finish
+```
+
+プラン完了(POST)
+
+```shell
+$ curl -XPOST \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  -d '[{"user_id": "aeb4238a-0582-408f-a68e-fc3f8163fc87", "like": true}, {"user_id": "1f4e3db9-e6ec-4028-befe-4f92c2bb2051", "like": false}]' \
+  localhost:5050/plan/finish
 ```
 
 #### logout
