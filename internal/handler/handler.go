@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-
 	api "github.com/dena-gohost/gohost-server/gen/api"
 )
 

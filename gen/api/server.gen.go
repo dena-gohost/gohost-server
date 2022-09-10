@@ -76,7 +76,8 @@ type PostRegisterJSONBody = User
 
 // GetSpotsParams defines parameters for GetSpots.
 type GetSpotsParams struct {
-	Date openapi_types.Date `form:"date" json:"date"`
+	Date  openapi_types.Date `form:"date" json:"date"`
+	Limit *int               `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // PostSpotsSpotIdEntryJSONBody defines parameters for PostSpotsSpotIdEntry.
@@ -104,9 +105,6 @@ type ServerInterface interface {
 	// 肝試しの確定日程の情報
 	// (GET /plan)
 	GetPlan(ctx echo.Context) error
-	// 肝試しの確定日程の詳細情報
-	// (GET /plans/{plan_id})
-	GetPlansPlanId(ctx echo.Context, planId string) error
 	// ユーザー登録に必要な情報
 	// (GET /register)
 	GetRegister(ctx echo.Context) error
@@ -118,7 +116,7 @@ type ServerInterface interface {
 	GetSpots(ctx echo.Context, params GetSpotsParams) error
 	// 肝試しスポット
 	// (GET /spots/{spot_id})
-	GetSpotsSpotId(ctx echo.Context, spotId int) error
+	GetSpotsSpotId(ctx echo.Context, spotId string) error
 	// どの肝試しスポットにするかを決定
 	// (POST /spots/{spot_id}/entry)
 	PostSpotsSpotIdEntry(ctx echo.Context, spotId string) error
@@ -162,24 +160,6 @@ func (w *ServerInterfaceWrapper) GetPlan(ctx echo.Context) error {
 	return err
 }
 
-// GetPlansPlanId converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPlansPlanId(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "plan_id" -------------
-	var planId string
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "plan_id", runtime.ParamLocationPath, ctx.Param("plan_id"), &planId)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter plan_id: %s", err))
-	}
-
-	ctx.Set(CookieAuthScopes, []string{""})
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPlansPlanId(ctx, planId)
-	return err
-}
-
 // GetRegister converts echo context to params.
 func (w *ServerInterfaceWrapper) GetRegister(ctx echo.Context) error {
 	var err error
@@ -217,6 +197,13 @@ func (w *ServerInterfaceWrapper) GetSpots(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
 	}
 
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetSpots(ctx, params)
 	return err
@@ -226,7 +213,7 @@ func (w *ServerInterfaceWrapper) GetSpots(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetSpotsSpotId(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "spot_id" -------------
-	var spotId int
+	var spotId string
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "spot_id", runtime.ParamLocationPath, ctx.Param("spot_id"), &spotId)
 	if err != nil {
@@ -289,7 +276,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 	router.POST(baseURL+"/logout", wrapper.PostLogout)
 	router.GET(baseURL+"/plan", wrapper.GetPlan)
-	router.GET(baseURL+"/plans/:plan_id", wrapper.GetPlansPlanId)
 	router.GET(baseURL+"/register", wrapper.GetRegister)
 	router.POST(baseURL+"/register", wrapper.PostRegister)
 	router.GET(baseURL+"/spots", wrapper.GetSpots)
