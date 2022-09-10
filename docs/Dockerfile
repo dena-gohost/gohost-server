@@ -6,7 +6,7 @@ WORKDIR /workspace
 
 COPY . .
 
-RUN go build -o /artifact/app ./cmd/http-server
+RUN go build -o /artifact/app ./cmd/gohost-server
 
 FROM gcr.io/distroless/base-debian10
 
