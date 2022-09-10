@@ -35,7 +35,7 @@ func (s *Server) PostLogin(ec echo.Context) error {
 
 	msg, id, err := service.Login(ctx, txn, req)
 	if msg == nil || err != nil {
-		return echoutil.ErrInternal(ec, err)
+		return echoutil.ErrBadPassword(ec, err)
 	}
 
 	if err := txn.Commit(); err != nil {
