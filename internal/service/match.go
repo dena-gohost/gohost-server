@@ -148,7 +148,8 @@ func EntrySpot(
 	id := uuid.NewString()
 
 	inp := &daocore.Entry{
-		UserID:       id,
+		ID:           id,
+		UserID:       user.ID,
 		UniversityID: user.UniversityID,
 		Date:         opts.Date,
 		SpotID:       spotID,
