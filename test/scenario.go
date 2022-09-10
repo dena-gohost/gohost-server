@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
-	"github.com/dena-gohost/gohost-server/gen/api"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
 	"time"
+
+	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
+	"github.com/pkg/errors"
+
+	"github.com/dena-gohost/gohost-server/gen/api"
 )
 
 const (
