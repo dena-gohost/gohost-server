@@ -54,3 +54,7 @@ gen-db:
 fix-db: __init-db-args
 	echo "DELETE FROM schema_migrations;" | mysql -u$(DB_USER) -p$(DB_PASS) -P$(DB_PORT) -D$(DB_NAME) -h$(DB_HOST)
 	for file in $$(find ./ddl -type f -name '*.down.sql'); do mysql -u$(DB_USER) -p$(DB_PASS) -h$(DB_HOST) -P$(DB_PORT) -D$(DB_NAME) < $$file; done
+
+.PHONY: seed-db
+seed-db: __init-db-args
+	for file in $$(find ./test/data -type f -name '*.sql' | sort); do mysql -u$(DB_USER) -p$(DB_PASS) -h$(DB_HOST) -P$(DB_PORT) -D$(DB_NAME) < $$file; done

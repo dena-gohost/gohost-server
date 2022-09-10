@@ -12,66 +12,78 @@ import (
 	"github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
-const UserSessionTableName = "user_sessions"
+const UserPlanTableName = "user_plans"
 
-var UserSessionAllColumns = []string{
+var UserPlanAllColumns = []string{
 	"id",
-	"user_id",
+	"plan_id",
+	"canceled",
+	"finished",
 	"created_at",
 	"updated_at",
 }
 
-var UserSessionColumnsWOMagics = []string{
+var UserPlanColumnsWOMagics = []string{
 	"id",
-	"user_id",
+	"plan_id",
+	"canceled",
+	"finished",
 }
 
-var UserSessionPrimaryKeyColumns = []string{
+var UserPlanPrimaryKeyColumns = []string{
 	"id",
 }
 
-type UserSession struct {
+type UserPlan struct {
 	ID        string
-	UserID    string
+	PlanID    string
+	Canceled  *time.Time
+	Finished  *time.Time
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
 }
 
-func (t *UserSession) Values() []interface{} {
+func (t *UserPlan) Values() []interface{} {
 	return []interface{}{
 		t.ID,
-		t.UserID,
+		t.PlanID,
+		t.Canceled,
+		t.Finished,
 	}
 }
 
-func (t *UserSession) SetMap() map[string]interface{} {
+func (t *UserPlan) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":      t.ID,
-		"user_id": t.UserID,
+		"id":       t.ID,
+		"plan_id":  t.PlanID,
+		"canceled": t.Canceled,
+		"finished": t.Finished,
 	}
 }
 
-func (t *UserSession) Ptrs() []interface{} {
+func (t *UserPlan) Ptrs() []interface{} {
 	return []interface{}{
 		&t.ID,
-		&t.UserID,
+		&t.PlanID,
+		&t.Canceled,
+		&t.Finished,
 		&t.CreatedAt,
 		&t.UpdatedAt,
 	}
 }
 
-func IterateUserSession(sc interface{ Scan(...interface{}) error }) (UserSession, error) {
-	t := UserSession{}
+func IterateUserPlan(sc interface{ Scan(...interface{}) error }) (UserPlan, error) {
+	t := UserPlan{}
 	if err := sc.Scan(t.Ptrs()...); err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return UserPlan{}, dberror.MapError(err)
 	}
 	return t, nil
 }
 
-func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, error) {
+func SelectAllUserPlan(ctx context.Context, txn *sql.Tx) ([]*UserPlan, error) {
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(UserPlanAllColumns...).
+		From(UserPlanTableName).
 		ToSql()
 	if err != nil {
 		return nil, dberror.MapError(err)
@@ -85,9 +97,9 @@ func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, err
 	if err != nil {
 		return nil, dberror.MapError(err)
 	}
-	res := make([]*UserSession, 0)
+	res := make([]*UserPlan, 0)
 	for rows.Next() {
-		t, err := IterateUserSession(rows)
+		t, err := IterateUserPlan(rows)
 		if err != nil {
 			return nil, dberror.MapError(err)
 		}
@@ -96,47 +108,59 @@ func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, err
 	return res, nil
 }
 
-func SelectOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *string) (UserSession, error) {
+func SelectUserPlanByPlanID(ctx context.Context, txn *sql.Tx, plan_id *string) ([]*UserPlan, error) {
 	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
+	if plan_id != nil {
+		eq["plan_id"] = *plan_id
 	}
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(UserPlanAllColumns...).
+		From(UserPlanTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return nil, dberror.MapError(err)
 	}
 	stmt, err := txn.PrepareContext(ctx, query)
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return nil, dberror.MapError(err)
 	}
-	return IterateUserSession(stmt.QueryRowContext(ctx, params...))
+	rows, err := stmt.QueryContext(ctx, params...)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	res := make([]*UserPlan, 0)
+	for rows.Next() {
+		t, err := IterateUserPlan(rows)
+		if err != nil {
+			return nil, dberror.MapError(err)
+		}
+		res = append(res, &t)
+	}
+	return res, nil
 }
 
-func SelectOneUserSessionByID(ctx context.Context, txn *sql.Tx, id *string) (UserSession, error) {
+func SelectOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *string) (UserPlan, error) {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
 	}
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(UserPlanAllColumns...).
+		From(UserPlanTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return UserPlan{}, dberror.MapError(err)
 	}
 	stmt, err := txn.PrepareContext(ctx, query)
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return UserPlan{}, dberror.MapError(err)
 	}
-	return IterateUserSession(stmt.QueryRowContext(ctx, params...))
+	return IterateUserPlan(stmt.QueryRowContext(ctx, params...))
 }
 
-func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession) error {
+func InsertUserPlan(ctx context.Context, txn *sql.Tx, records []*UserPlan) error {
 	for i := range records {
 		if records[i] == nil {
 			records = append(records[:i], records[i+1:]...)
@@ -145,7 +169,7 @@ func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession)
 	if len(records) == 0 {
 		return nil
 	}
-	sq := squirrel.Insert(UserSessionTableName).Columns(UserSessionColumnsWOMagics...)
+	sq := squirrel.Insert(UserPlanTableName).Columns(UserPlanColumnsWOMagics...)
 	for _, r := range records {
 		if r == nil {
 			continue
@@ -166,8 +190,8 @@ func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession)
 	return nil
 }
 
-func UpdateUserSession(ctx context.Context, txn *sql.Tx, record UserSession) error {
-	sql, params, err := squirrel.Update(UserSessionTableName).SetMap(record.SetMap()).
+func UpdateUserPlan(ctx context.Context, txn *sql.Tx, record UserPlan) error {
+	sql, params, err := squirrel.Update(UserPlanTableName).SetMap(record.SetMap()).
 		Where(squirrel.Eq{
 			"id": record.ID,
 		}).
@@ -185,13 +209,13 @@ func UpdateUserSession(ctx context.Context, txn *sql.Tx, record UserSession) err
 	return nil
 }
 
-func UpsertUserSession(ctx context.Context, txn *sql.Tx, record UserSession) error {
-	updateSQL, params, err := squirrel.Update(UserSessionTableName).SetMap(record.SetMap()).ToSql()
+func UpsertUserPlan(ctx context.Context, txn *sql.Tx, record UserPlan) error {
+	updateSQL, params, err := squirrel.Update(UserPlanTableName).SetMap(record.SetMap()).ToSql()
 	if err != nil {
 		return err
 	}
-	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+UserSessionTableName+" SET ")
-	query, params, err := squirrel.Insert(UserSessionTableName).Columns(UserSessionColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+UserPlanTableName+" SET ")
+	query, params, err := squirrel.Insert(UserPlanTableName).Columns(UserPlanColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
 	if err != nil {
 		return err
 	}
@@ -205,14 +229,14 @@ func UpsertUserSession(ctx context.Context, txn *sql.Tx, record UserSession) err
 	return nil
 }
 
-func DeleteOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
+func DeleteUserPlanByPlanID(ctx context.Context, txn *sql.Tx, plan_id *string) error {
 	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
+	if plan_id != nil {
+		eq["plan_id"] = *plan_id
 	}
 
 	query, params, err := squirrel.
-		Delete(UserSessionTableName).
+		Delete(UserPlanTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
@@ -228,14 +252,14 @@ func DeleteOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *str
 	return nil
 }
 
-func DeleteOneUserSessionByID(ctx context.Context, txn *sql.Tx, id *string) error {
+func DeleteOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *string) error {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
 	}
 
 	query, params, err := squirrel.
-		Delete(UserSessionTableName).
+		Delete(UserPlanTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {

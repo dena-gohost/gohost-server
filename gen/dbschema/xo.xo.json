@@ -6,6 +6,285 @@
       "tables": [
         {
           "type": "table",
+          "name": "entries",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            },
+            {
+              "name": "user_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "date",
+              "datatype": {
+                "type": "date"
+              }
+            },
+            {
+              "name": "spot_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "created_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            },
+            {
+              "name": "updated_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "date",
+              "fields": [
+                {
+                  "name": "date",
+                  "datatype": {
+                    "type": "date"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "spot_id",
+              "fields": [
+                {
+                  "name": "spot_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ]
+            },
+            {
+              "name": "user_id",
+              "fields": [
+                {
+                  "name": "user_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                },
+                {
+                  "name": "date",
+                  "datatype": {
+                    "type": "date"
+                  }
+                }
+              ],
+              "is_unique": true
+            },
+            {
+              "name": "user_id_2",
+              "fields": [
+                {
+                  "name": "user_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ]
+            },
+            {
+              "name": "entries_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  },
+                  "is_primary": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ],
+          "manual": true
+        },
+        {
+          "type": "table",
+          "name": "genders",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 1
+              },
+              "is_primary": true
+            },
+            {
+              "name": "name",
+              "datatype": {
+                "type": "varchar",
+                "prec": 128
+              }
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 1
+              },
+              "is_primary": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "name",
+              "fields": [
+                {
+                  "name": "name",
+                  "datatype": {
+                    "type": "varchar",
+                    "prec": 128
+                  }
+                }
+              ],
+              "is_unique": true
+            },
+            {
+              "name": "genders_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 1
+                  },
+                  "is_primary": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ],
+          "manual": true
+        },
+        {
+          "type": "table",
+          "name": "plans",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            },
+            {
+              "name": "spot_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "date",
+              "datatype": {
+                "type": "date"
+              }
+            },
+            {
+              "name": "created_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            },
+            {
+              "name": "updated_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "spot_id",
+              "fields": [
+                {
+                  "name": "spot_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                },
+                {
+                  "name": "date",
+                  "datatype": {
+                    "type": "date"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "plans_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  },
+                  "is_primary": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ],
+          "manual": true
+        },
+        {
+          "type": "table",
           "name": "schema_migrations",
           "columns": [
             {
@@ -40,6 +319,373 @@
                   "name": "version",
                   "datatype": {
                     "type": "bigint"
+                  },
+                  "is_primary": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ],
+          "manual": true
+        },
+        {
+          "type": "table",
+          "name": "spot_universities",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "int"
+              },
+              "is_primary": true,
+              "is_sequence": true
+            },
+            {
+              "name": "spot_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "university_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "created_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            },
+            {
+              "name": "updated_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "int"
+              },
+              "is_primary": true,
+              "is_sequence": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "spot_id",
+              "fields": [
+                {
+                  "name": "spot_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                },
+                {
+                  "name": "university_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ],
+              "is_unique": true
+            },
+            {
+              "name": "spot_id_2",
+              "fields": [
+                {
+                  "name": "spot_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ]
+            },
+            {
+              "name": "university_id",
+              "fields": [
+                {
+                  "name": "university_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ]
+            },
+            {
+              "name": "spot_universities_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "int"
+                  },
+                  "is_primary": true,
+                  "is_sequence": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "name": "spots",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            },
+            {
+              "name": "name",
+              "datatype": {
+                "type": "varchar",
+                "prec": 256
+              }
+            },
+            {
+              "name": "description",
+              "datatype": {
+                "type": "varchar",
+                "prec": 1024
+              }
+            },
+            {
+              "name": "image_url",
+              "datatype": {
+                "type": "varchar",
+                "prec": 1024
+              }
+            },
+            {
+              "name": "address",
+              "datatype": {
+                "type": "varchar",
+                "prec": 1024
+              }
+            },
+            {
+              "name": "created_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            },
+            {
+              "name": "updated_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "name",
+              "fields": [
+                {
+                  "name": "name",
+                  "datatype": {
+                    "type": "varchar",
+                    "prec": 256
+                  }
+                }
+              ]
+            },
+            {
+              "name": "spots_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  },
+                  "is_primary": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ],
+          "manual": true
+        },
+        {
+          "type": "table",
+          "name": "universities",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            },
+            {
+              "name": "name",
+              "datatype": {
+                "type": "varchar",
+                "prec": 128
+              }
+            },
+            {
+              "name": "meeting_station",
+              "datatype": {
+                "type": "varchar",
+                "prec": 1024
+              }
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "name",
+              "fields": [
+                {
+                  "name": "name",
+                  "datatype": {
+                    "type": "varchar",
+                    "prec": 128
+                  }
+                }
+              ],
+              "is_unique": true
+            },
+            {
+              "name": "universities_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  },
+                  "is_primary": true
+                }
+              ],
+              "is_unique": true,
+              "is_primary": true
+            }
+          ],
+          "manual": true
+        },
+        {
+          "type": "table",
+          "name": "user_plans",
+          "columns": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            },
+            {
+              "name": "plan_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "canceled",
+              "datatype": {
+                "type": "timestamp",
+                "nullable": true
+              }
+            },
+            {
+              "name": "finished",
+              "datatype": {
+                "type": "timestamp",
+                "nullable": true
+              }
+            },
+            {
+              "name": "created_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            },
+            {
+              "name": "updated_at",
+              "datatype": {
+                "type": "timestamp"
+              },
+              "default": "CURRENT_TIMESTAMP"
+            }
+          ],
+          "primary_keys": [
+            {
+              "name": "id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              },
+              "is_primary": true
+            }
+          ],
+          "indexes": [
+            {
+              "name": "plan_id",
+              "fields": [
+                {
+                  "name": "plan_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ]
+            },
+            {
+              "name": "user_plans_id_pkey",
+              "fields": [
+                {
+                  "name": "id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
                   },
                   "is_primary": true
                 }
@@ -153,6 +799,13 @@
               }
             },
             {
+              "name": "user_name",
+              "datatype": {
+                "type": "varchar",
+                "prec": 128
+              }
+            },
+            {
               "name": "email",
               "datatype": {
                 "type": "varchar",
@@ -165,6 +818,60 @@
                 "type": "varchar",
                 "prec": 128
               }
+            },
+            {
+              "name": "university_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "birth_date",
+              "datatype": {
+                "type": "date"
+              }
+            },
+            {
+              "name": "year",
+              "datatype": {
+                "type": "int"
+              }
+            },
+            {
+              "name": "gender_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
+              "name": "icon_url",
+              "datatype": {
+                "type": "varchar",
+                "prec": 1028
+              }
+            },
+            {
+              "name": "instagram_id",
+              "datatype": {
+                "type": "varchar",
+                "prec": 256
+              }
+            },
+            {
+              "name": "good",
+              "datatype": {
+                "type": "int"
+              },
+              "default": "0"
+            },
+            {
+              "name": "bad",
+              "datatype": {
+                "type": "int"
+              },
+              "default": "0"
             }
           ],
           "primary_keys": [
@@ -183,6 +890,50 @@
               "fields": [
                 {
                   "name": "email",
+                  "datatype": {
+                    "type": "varchar",
+                    "prec": 128
+                  }
+                }
+              ],
+              "is_unique": true
+            },
+            {
+              "name": "university_id",
+              "fields": [
+                {
+                  "name": "university_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                },
+                {
+                  "name": "birth_date",
+                  "datatype": {
+                    "type": "date"
+                  }
+                },
+                {
+                  "name": "year",
+                  "datatype": {
+                    "type": "int"
+                  }
+                },
+                {
+                  "name": "gender_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ]
+            },
+            {
+              "name": "user_name",
+              "fields": [
+                {
+                  "name": "user_name",
                   "datatype": {
                     "type": "varchar",
                     "prec": 128

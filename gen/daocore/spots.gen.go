@@ -12,66 +12,84 @@ import (
 	"github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
-const UserSessionTableName = "user_sessions"
+const SpotTableName = "spots"
 
-var UserSessionAllColumns = []string{
+var SpotAllColumns = []string{
 	"id",
-	"user_id",
+	"name",
+	"description",
+	"image_url",
+	"address",
 	"created_at",
 	"updated_at",
 }
 
-var UserSessionColumnsWOMagics = []string{
+var SpotColumnsWOMagics = []string{
 	"id",
-	"user_id",
+	"name",
+	"description",
+	"image_url",
+	"address",
 }
 
-var UserSessionPrimaryKeyColumns = []string{
+var SpotPrimaryKeyColumns = []string{
 	"id",
 }
 
-type UserSession struct {
-	ID        string
-	UserID    string
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+type Spot struct {
+	ID          string
+	Name        string
+	Description string
+	ImageUrl    string
+	Address     string
+	CreatedAt   *time.Time
+	UpdatedAt   *time.Time
 }
 
-func (t *UserSession) Values() []interface{} {
+func (t *Spot) Values() []interface{} {
 	return []interface{}{
 		t.ID,
-		t.UserID,
+		t.Name,
+		t.Description,
+		t.ImageUrl,
+		t.Address,
 	}
 }
 
-func (t *UserSession) SetMap() map[string]interface{} {
+func (t *Spot) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":      t.ID,
-		"user_id": t.UserID,
+		"id":          t.ID,
+		"name":        t.Name,
+		"description": t.Description,
+		"image_url":   t.ImageUrl,
+		"address":     t.Address,
 	}
 }
 
-func (t *UserSession) Ptrs() []interface{} {
+func (t *Spot) Ptrs() []interface{} {
 	return []interface{}{
 		&t.ID,
-		&t.UserID,
+		&t.Name,
+		&t.Description,
+		&t.ImageUrl,
+		&t.Address,
 		&t.CreatedAt,
 		&t.UpdatedAt,
 	}
 }
 
-func IterateUserSession(sc interface{ Scan(...interface{}) error }) (UserSession, error) {
-	t := UserSession{}
+func IterateSpot(sc interface{ Scan(...interface{}) error }) (Spot, error) {
+	t := Spot{}
 	if err := sc.Scan(t.Ptrs()...); err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Spot{}, dberror.MapError(err)
 	}
 	return t, nil
 }
 
-func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, error) {
+func SelectAllSpot(ctx context.Context, txn *sql.Tx) ([]*Spot, error) {
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(SpotAllColumns...).
+		From(SpotTableName).
 		ToSql()
 	if err != nil {
 		return nil, dberror.MapError(err)
@@ -85,9 +103,9 @@ func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, err
 	if err != nil {
 		return nil, dberror.MapError(err)
 	}
-	res := make([]*UserSession, 0)
+	res := make([]*Spot, 0)
 	for rows.Next() {
-		t, err := IterateUserSession(rows)
+		t, err := IterateSpot(rows)
 		if err != nil {
 			return nil, dberror.MapError(err)
 		}
@@ -96,47 +114,59 @@ func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, err
 	return res, nil
 }
 
-func SelectOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *string) (UserSession, error) {
+func SelectSpotByName(ctx context.Context, txn *sql.Tx, name *string) ([]*Spot, error) {
 	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
+	if name != nil {
+		eq["name"] = *name
 	}
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(SpotAllColumns...).
+		From(SpotTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return nil, dberror.MapError(err)
 	}
 	stmt, err := txn.PrepareContext(ctx, query)
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return nil, dberror.MapError(err)
 	}
-	return IterateUserSession(stmt.QueryRowContext(ctx, params...))
+	rows, err := stmt.QueryContext(ctx, params...)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	res := make([]*Spot, 0)
+	for rows.Next() {
+		t, err := IterateSpot(rows)
+		if err != nil {
+			return nil, dberror.MapError(err)
+		}
+		res = append(res, &t)
+	}
+	return res, nil
 }
 
-func SelectOneUserSessionByID(ctx context.Context, txn *sql.Tx, id *string) (UserSession, error) {
+func SelectOneSpotByID(ctx context.Context, txn *sql.Tx, id *string) (Spot, error) {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
 	}
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(SpotAllColumns...).
+		From(SpotTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Spot{}, dberror.MapError(err)
 	}
 	stmt, err := txn.PrepareContext(ctx, query)
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Spot{}, dberror.MapError(err)
 	}
-	return IterateUserSession(stmt.QueryRowContext(ctx, params...))
+	return IterateSpot(stmt.QueryRowContext(ctx, params...))
 }
 
-func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession) error {
+func InsertSpot(ctx context.Context, txn *sql.Tx, records []*Spot) error {
 	for i := range records {
 		if records[i] == nil {
 			records = append(records[:i], records[i+1:]...)
@@ -145,7 +175,7 @@ func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession)
 	if len(records) == 0 {
 		return nil
 	}
-	sq := squirrel.Insert(UserSessionTableName).Columns(UserSessionColumnsWOMagics...)
+	sq := squirrel.Insert(SpotTableName).Columns(SpotColumnsWOMagics...)
 	for _, r := range records {
 		if r == nil {
 			continue
@@ -166,8 +196,8 @@ func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession)
 	return nil
 }
 
-func UpdateUserSession(ctx context.Context, txn *sql.Tx, record UserSession) error {
-	sql, params, err := squirrel.Update(UserSessionTableName).SetMap(record.SetMap()).
+func UpdateSpot(ctx context.Context, txn *sql.Tx, record Spot) error {
+	sql, params, err := squirrel.Update(SpotTableName).SetMap(record.SetMap()).
 		Where(squirrel.Eq{
 			"id": record.ID,
 		}).
@@ -185,13 +215,13 @@ func UpdateUserSession(ctx context.Context, txn *sql.Tx, record UserSession) err
 	return nil
 }
 
-func UpsertUserSession(ctx context.Context, txn *sql.Tx, record UserSession) error {
-	updateSQL, params, err := squirrel.Update(UserSessionTableName).SetMap(record.SetMap()).ToSql()
+func UpsertSpot(ctx context.Context, txn *sql.Tx, record Spot) error {
+	updateSQL, params, err := squirrel.Update(SpotTableName).SetMap(record.SetMap()).ToSql()
 	if err != nil {
 		return err
 	}
-	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+UserSessionTableName+" SET ")
-	query, params, err := squirrel.Insert(UserSessionTableName).Columns(UserSessionColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+SpotTableName+" SET ")
+	query, params, err := squirrel.Insert(SpotTableName).Columns(SpotColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
 	if err != nil {
 		return err
 	}
@@ -205,14 +235,14 @@ func UpsertUserSession(ctx context.Context, txn *sql.Tx, record UserSession) err
 	return nil
 }
 
-func DeleteOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
+func DeleteSpotByName(ctx context.Context, txn *sql.Tx, name *string) error {
 	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
+	if name != nil {
+		eq["name"] = *name
 	}
 
 	query, params, err := squirrel.
-		Delete(UserSessionTableName).
+		Delete(SpotTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
@@ -228,14 +258,14 @@ func DeleteOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *str
 	return nil
 }
 
-func DeleteOneUserSessionByID(ctx context.Context, txn *sql.Tx, id *string) error {
+func DeleteOneSpotByID(ctx context.Context, txn *sql.Tx, id *string) error {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
 	}
 
 	query, params, err := squirrel.
-		Delete(UserSessionTableName).
+		Delete(SpotTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {

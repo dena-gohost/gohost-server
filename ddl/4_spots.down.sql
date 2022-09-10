@@ -1,3 +1,3 @@
-DROP TABLE spots;
-DROP TABLE spots_universities;
-DROP TABLE entries;
+DROP TABLE IF EXISTS spots;
+DROP TABLE IF EXISTS spot_universities;
+DROP TABLE IF EXISTS entries;

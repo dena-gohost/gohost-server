@@ -5,73 +5,66 @@ import (
 	"context"
 	"database/sql"
 	"strings"
-	"time"
 
 	"github.com/Masterminds/squirrel"
 
 	"github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
-const UserSessionTableName = "user_sessions"
+const GenderTableName = "genders"
 
-var UserSessionAllColumns = []string{
+var GenderAllColumns = []string{
 	"id",
-	"user_id",
-	"created_at",
-	"updated_at",
+	"name",
 }
 
-var UserSessionColumnsWOMagics = []string{
+var GenderColumnsWOMagics = []string{
 	"id",
-	"user_id",
+	"name",
 }
 
-var UserSessionPrimaryKeyColumns = []string{
+var GenderPrimaryKeyColumns = []string{
 	"id",
 }
 
-type UserSession struct {
-	ID        string
-	UserID    string
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+type Gender struct {
+	ID   string
+	Name string
 }
 
-func (t *UserSession) Values() []interface{} {
+func (t *Gender) Values() []interface{} {
 	return []interface{}{
 		t.ID,
-		t.UserID,
+		t.Name,
 	}
 }
 
-func (t *UserSession) SetMap() map[string]interface{} {
+func (t *Gender) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":      t.ID,
-		"user_id": t.UserID,
+		"id":   t.ID,
+		"name": t.Name,
 	}
 }
 
-func (t *UserSession) Ptrs() []interface{} {
+func (t *Gender) Ptrs() []interface{} {
 	return []interface{}{
 		&t.ID,
-		&t.UserID,
-		&t.CreatedAt,
-		&t.UpdatedAt,
+		&t.Name,
 	}
 }
 
-func IterateUserSession(sc interface{ Scan(...interface{}) error }) (UserSession, error) {
-	t := UserSession{}
+func IterateGender(sc interface{ Scan(...interface{}) error }) (Gender, error) {
+	t := Gender{}
 	if err := sc.Scan(t.Ptrs()...); err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Gender{}, dberror.MapError(err)
 	}
 	return t, nil
 }
 
-func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, error) {
+func SelectAllGender(ctx context.Context, txn *sql.Tx) ([]*Gender, error) {
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(GenderAllColumns...).
+		From(GenderTableName).
 		ToSql()
 	if err != nil {
 		return nil, dberror.MapError(err)
@@ -85,9 +78,9 @@ func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, err
 	if err != nil {
 		return nil, dberror.MapError(err)
 	}
-	res := make([]*UserSession, 0)
+	res := make([]*Gender, 0)
 	for rows.Next() {
-		t, err := IterateUserSession(rows)
+		t, err := IterateGender(rows)
 		if err != nil {
 			return nil, dberror.MapError(err)
 		}
@@ -96,47 +89,47 @@ func SelectAllUserSession(ctx context.Context, txn *sql.Tx) ([]*UserSession, err
 	return res, nil
 }
 
-func SelectOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *string) (UserSession, error) {
+func SelectOneGenderByName(ctx context.Context, txn *sql.Tx, name *string) (Gender, error) {
 	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
+	if name != nil {
+		eq["name"] = *name
 	}
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(GenderAllColumns...).
+		From(GenderTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Gender{}, dberror.MapError(err)
 	}
 	stmt, err := txn.PrepareContext(ctx, query)
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Gender{}, dberror.MapError(err)
 	}
-	return IterateUserSession(stmt.QueryRowContext(ctx, params...))
+	return IterateGender(stmt.QueryRowContext(ctx, params...))
 }
 
-func SelectOneUserSessionByID(ctx context.Context, txn *sql.Tx, id *string) (UserSession, error) {
+func SelectOneGenderByID(ctx context.Context, txn *sql.Tx, id *string) (Gender, error) {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
 	}
 	query, params, err := squirrel.
-		Select(UserSessionAllColumns...).
-		From(UserSessionTableName).
+		Select(GenderAllColumns...).
+		From(GenderTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Gender{}, dberror.MapError(err)
 	}
 	stmt, err := txn.PrepareContext(ctx, query)
 	if err != nil {
-		return UserSession{}, dberror.MapError(err)
+		return Gender{}, dberror.MapError(err)
 	}
-	return IterateUserSession(stmt.QueryRowContext(ctx, params...))
+	return IterateGender(stmt.QueryRowContext(ctx, params...))
 }
 
-func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession) error {
+func InsertGender(ctx context.Context, txn *sql.Tx, records []*Gender) error {
 	for i := range records {
 		if records[i] == nil {
 			records = append(records[:i], records[i+1:]...)
@@ -145,7 +138,7 @@ func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession)
 	if len(records) == 0 {
 		return nil
 	}
-	sq := squirrel.Insert(UserSessionTableName).Columns(UserSessionColumnsWOMagics...)
+	sq := squirrel.Insert(GenderTableName).Columns(GenderColumnsWOMagics...)
 	for _, r := range records {
 		if r == nil {
 			continue
@@ -166,8 +159,8 @@ func InsertUserSession(ctx context.Context, txn *sql.Tx, records []*UserSession)
 	return nil
 }
 
-func UpdateUserSession(ctx context.Context, txn *sql.Tx, record UserSession) error {
-	sql, params, err := squirrel.Update(UserSessionTableName).SetMap(record.SetMap()).
+func UpdateGender(ctx context.Context, txn *sql.Tx, record Gender) error {
+	sql, params, err := squirrel.Update(GenderTableName).SetMap(record.SetMap()).
 		Where(squirrel.Eq{
 			"id": record.ID,
 		}).
@@ -185,13 +178,13 @@ func UpdateUserSession(ctx context.Context, txn *sql.Tx, record UserSession) err
 	return nil
 }
 
-func UpsertUserSession(ctx context.Context, txn *sql.Tx, record UserSession) error {
-	updateSQL, params, err := squirrel.Update(UserSessionTableName).SetMap(record.SetMap()).ToSql()
+func UpsertGender(ctx context.Context, txn *sql.Tx, record Gender) error {
+	updateSQL, params, err := squirrel.Update(GenderTableName).SetMap(record.SetMap()).ToSql()
 	if err != nil {
 		return err
 	}
-	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+UserSessionTableName+" SET ")
-	query, params, err := squirrel.Insert(UserSessionTableName).Columns(UserSessionColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+GenderTableName+" SET ")
+	query, params, err := squirrel.Insert(GenderTableName).Columns(GenderColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
 	if err != nil {
 		return err
 	}
@@ -205,14 +198,14 @@ func UpsertUserSession(ctx context.Context, txn *sql.Tx, record UserSession) err
 	return nil
 }
 
-func DeleteOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
+func DeleteOneGenderByName(ctx context.Context, txn *sql.Tx, name *string) error {
 	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
+	if name != nil {
+		eq["name"] = *name
 	}
 
 	query, params, err := squirrel.
-		Delete(UserSessionTableName).
+		Delete(GenderTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {
@@ -228,14 +221,14 @@ func DeleteOneUserSessionByUserID(ctx context.Context, txn *sql.Tx, user_id *str
 	return nil
 }
 
-func DeleteOneUserSessionByID(ctx context.Context, txn *sql.Tx, id *string) error {
+func DeleteOneGenderByID(ctx context.Context, txn *sql.Tx, id *string) error {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
 	}
 
 	query, params, err := squirrel.
-		Delete(UserSessionTableName).
+		Delete(GenderTableName).
 		Where(eq).
 		ToSql()
 	if err != nil {

@@ -8,6 +8,34 @@ func Iterate{{ $table.GoName }}(sc interface{ Scan(...interface{}) error}) ({{ $
     return t, nil
 }
 
+func SelectAll{{ $table.GoName }}(ctx context.Context, txn *sql.Tx) ([]* {{- $table.GoName }}, error) {
+    query, params, err := squirrel.
+        Select({{ $table.GoName }}AllColumns...).
+        From({{ $table.GoName }}TableName).
+        ToSql()
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+
+    rows, err := stmt.QueryContext(ctx, params...)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    res := make([]*{{ $table.GoName }}, 0)
+    for rows.Next() {
+        t, err := Iterate{{ $table.GoName }}(rows)
+        if err != nil {
+            return nil, dberror.MapError(err)
+        }
+        res = append(res, &t)
+    }
+    return res, nil
+}
+
 {{ range $index := $table.Indexes -}}
 func Select{{ if $index.IsUnique }}One{{ end }}{{ $table.GoName }}By{{ range $i, $f := $index.Fields }} {{- $f.GoName -}} {{- if not ($index.Tail $i) -}} And {{- end }}{{ end }}(ctx context.Context, txn *sql.Tx, {{ range $i, $f := $index.Fields }} {{- $f.Name }} *{{ $f.GoType }} {{- if not ($index.Tail $i) -}} , {{- end }}{{ end }}) ({{ if not $index.IsUnique -}} []* {{- end }} {{- $table.GoName }}, error) {
     eq := squirrel.Eq{}

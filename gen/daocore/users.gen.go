@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 
@@ -17,16 +18,34 @@ var UserAllColumns = []string{
 	"id",
 	"first_name",
 	"last_name",
+	"user_name",
 	"email",
 	"password",
+	"university_id",
+	"birth_date",
+	"year",
+	"gender_id",
+	"icon_url",
+	"instagram_id",
+	"good",
+	"bad",
 }
 
 var UserColumnsWOMagics = []string{
 	"id",
 	"first_name",
 	"last_name",
+	"user_name",
 	"email",
 	"password",
+	"university_id",
+	"birth_date",
+	"year",
+	"gender_id",
+	"icon_url",
+	"instagram_id",
+	"good",
+	"bad",
 }
 
 var UserPrimaryKeyColumns = []string{
@@ -34,11 +53,20 @@ var UserPrimaryKeyColumns = []string{
 }
 
 type User struct {
-	ID        string
-	FirstName string
-	LastName  string
-	Email     string
-	Password  string
+	ID           string
+	FirstName    string
+	LastName     string
+	UserName     string
+	Email        string
+	Password     string
+	UniversityID string
+	BirthDate    *time.Time
+	Year         int
+	GenderID     string
+	IconUrl      string
+	InstagramID  string
+	Good         int
+	Bad          int
 }
 
 func (t *User) Values() []interface{} {
@@ -46,18 +74,36 @@ func (t *User) Values() []interface{} {
 		t.ID,
 		t.FirstName,
 		t.LastName,
+		t.UserName,
 		t.Email,
 		t.Password,
+		t.UniversityID,
+		t.BirthDate,
+		t.Year,
+		t.GenderID,
+		t.IconUrl,
+		t.InstagramID,
+		t.Good,
+		t.Bad,
 	}
 }
 
 func (t *User) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":         t.ID,
-		"first_name": t.FirstName,
-		"last_name":  t.LastName,
-		"email":      t.Email,
-		"password":   t.Password,
+		"id":            t.ID,
+		"first_name":    t.FirstName,
+		"last_name":     t.LastName,
+		"user_name":     t.UserName,
+		"email":         t.Email,
+		"password":      t.Password,
+		"university_id": t.UniversityID,
+		"birth_date":    t.BirthDate,
+		"year":          t.Year,
+		"gender_id":     t.GenderID,
+		"icon_url":      t.IconUrl,
+		"instagram_id":  t.InstagramID,
+		"good":          t.Good,
+		"bad":           t.Bad,
 	}
 }
 
@@ -66,8 +112,17 @@ func (t *User) Ptrs() []interface{} {
 		&t.ID,
 		&t.FirstName,
 		&t.LastName,
+		&t.UserName,
 		&t.Email,
 		&t.Password,
+		&t.UniversityID,
+		&t.BirthDate,
+		&t.Year,
+		&t.GenderID,
+		&t.IconUrl,
+		&t.InstagramID,
+		&t.Good,
+		&t.Bad,
 	}
 }
 
@@ -79,10 +134,99 @@ func IterateUser(sc interface{ Scan(...interface{}) error }) (User, error) {
 	return t, nil
 }
 
+func SelectAllUser(ctx context.Context, txn *sql.Tx) ([]*User, error) {
+	query, params, err := squirrel.
+		Select(UserAllColumns...).
+		From(UserTableName).
+		ToSql()
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+
+	rows, err := stmt.QueryContext(ctx, params...)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	res := make([]*User, 0)
+	for rows.Next() {
+		t, err := IterateUser(rows)
+		if err != nil {
+			return nil, dberror.MapError(err)
+		}
+		res = append(res, &t)
+	}
+	return res, nil
+}
+
 func SelectOneUserByEmail(ctx context.Context, txn *sql.Tx, email *string) (User, error) {
 	eq := squirrel.Eq{}
 	if email != nil {
 		eq["email"] = *email
+	}
+	query, params, err := squirrel.
+		Select(UserAllColumns...).
+		From(UserTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return User{}, dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return User{}, dberror.MapError(err)
+	}
+	return IterateUser(stmt.QueryRowContext(ctx, params...))
+}
+
+func SelectUserByUniversityIDAndBirthDateAndYearAndGenderID(ctx context.Context, txn *sql.Tx, university_id *string, birth_date **time.Time, year *int, gender_id *string) ([]*User, error) {
+	eq := squirrel.Eq{}
+	if university_id != nil {
+		eq["university_id"] = *university_id
+	}
+	if birth_date != nil {
+		eq["birth_date"] = *birth_date
+	}
+	if year != nil {
+		eq["year"] = *year
+	}
+	if gender_id != nil {
+		eq["gender_id"] = *gender_id
+	}
+	query, params, err := squirrel.
+		Select(UserAllColumns...).
+		From(UserTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	rows, err := stmt.QueryContext(ctx, params...)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	res := make([]*User, 0)
+	for rows.Next() {
+		t, err := IterateUser(rows)
+		if err != nil {
+			return nil, dberror.MapError(err)
+		}
+		res = append(res, &t)
+	}
+	return res, nil
+}
+
+func SelectOneUserByUserName(ctx context.Context, txn *sql.Tx, user_name *string) (User, error) {
+	eq := squirrel.Eq{}
+	if user_name != nil {
+		eq["user_name"] = *user_name
 	}
 	query, params, err := squirrel.
 		Select(UserAllColumns...).
@@ -192,6 +336,61 @@ func DeleteOneUserByEmail(ctx context.Context, txn *sql.Tx, email *string) error
 	eq := squirrel.Eq{}
 	if email != nil {
 		eq["email"] = *email
+	}
+
+	query, params, err := squirrel.
+		Delete(UserTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
+}
+
+func DeleteUserByUniversityIDAndBirthDateAndYearAndGenderID(ctx context.Context, txn *sql.Tx, university_id *string, birth_date **time.Time, year *int, gender_id *string) error {
+	eq := squirrel.Eq{}
+	if university_id != nil {
+		eq["university_id"] = *university_id
+	}
+	if birth_date != nil {
+		eq["birth_date"] = *birth_date
+	}
+	if year != nil {
+		eq["year"] = *year
+	}
+	if gender_id != nil {
+		eq["gender_id"] = *gender_id
+	}
+
+	query, params, err := squirrel.
+		Delete(UserTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
+}
+
+func DeleteOneUserByUserName(ctx context.Context, txn *sql.Tx, user_name *string) error {
+	eq := squirrel.Eq{}
+	if user_name != nil {
+		eq["user_name"] = *user_name
 	}
 
 	query, params, err := squirrel.

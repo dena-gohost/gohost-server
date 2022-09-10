@@ -59,16 +59,3 @@ var Genders = []api.Gender{
 		strev("その他"),
 	},
 }
-
-var Universities = []api.University{
-	{
-		strev("06faba8c-5d9f-495c-a9d7-3bc82a040398"),
-		strev("渋谷駅"),
-		strev("青山学院大学"),
-	},
-	{
-		strev("62f5081d-b85c-4554-8967-7a8d695ca0c2"),
-		strev("明大前駅"),
-		strev("明治大学"),
-	},
-}
