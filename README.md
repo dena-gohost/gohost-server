@@ -37,6 +37,30 @@ $ curl -XPOST \
   localhost:5050/login
 ```
 
+#### spots
+
+```shell
+$ curl \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  "localhost:5050/spots?date=2022-09-10&limit=3"
+```
+
+```shell
+$ curl \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  "localhost:5050/spots/7e684568-5ecf-4c65-9360-3c8b771b21e7"
+```
+
+```shell
+$ curl -XPOST \
+  -H "cookie: ${COOKIE}" \
+  -H "content-type: application/json" \
+  -d '{"date": "2022-09-10"}' \
+  "localhost:5050/spots/7e684568-5ecf-4c65-9360-3c8b771b21e7/entry"
+```
+
 #### logout
 
 ```shell

@@ -101,27 +101,28 @@ paths:
           schema:
             type: string
             format: date
+        - in: query
+          required: false
+          name: limit
+          schema:
+            type: integer
+            default: 3
       responses:
         200:
           description: "ok"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Spot"
-                  total_count:
-                    type: integer
+                type: array
+                items:
+                  $ref: "#/components/schemas/Spot"
   /spots/{spot_id}:
     parameters:
       - in: path
         required: true
         name: spot_id
         schema:
-          type: integer
+          type: string
     get:
       summary: "肝試しスポット"
       tags:
@@ -180,14 +181,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Spot"
-                  total_count:
-                    type: integer
+                type: array
+                items:
+                  $ref: "#/components/schemas/Spot"
   /plans/{plan_id}:
     parameters:
       - in: path

@@ -20,18 +20,3 @@ func (s *Server) GetRegister(ctx echo.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
-
-func (s *Server) GetSpots(ctx echo.Context, params api.GetSpotsParams) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *Server) GetSpotsSpotId(ctx echo.Context, spotId int) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *Server) PostSpotsSpotIdEntry(ctx echo.Context, spotId string) error {
-	//TODO implement me
-	panic("implement me")
-}
