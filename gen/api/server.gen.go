@@ -30,7 +30,7 @@ type Spot struct {
 	Id          *string `json:"id,omitempty"`
 
 	// 心霊スポットのURL
-	ImageUrls *string `json:"image_urls,omitempty"`
+	ImageUrl *string `json:"image_url,omitempty"`
 
 	// 集合時間(一覧画面では返さない)
 	MeetingHour *time.Time `json:"meeting_hour,omitempty"`
