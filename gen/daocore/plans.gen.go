@@ -17,6 +17,7 @@ const PlanTableName = "plans"
 var PlanAllColumns = []string{
 	"id",
 	"spot_id",
+	"university_id",
 	"date",
 	"created_at",
 	"updated_at",
@@ -25,6 +26,7 @@ var PlanAllColumns = []string{
 var PlanColumnsWOMagics = []string{
 	"id",
 	"spot_id",
+	"university_id",
 	"date",
 }
 
@@ -33,26 +35,29 @@ var PlanPrimaryKeyColumns = []string{
 }
 
 type Plan struct {
-	ID        string
-	SpotID    string
-	Date      *time.Time
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+	ID           string
+	SpotID       string
+	UniversityID string
+	Date         *time.Time
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
 }
 
 func (t *Plan) Values() []interface{} {
 	return []interface{}{
 		t.ID,
 		t.SpotID,
+		t.UniversityID,
 		t.Date,
 	}
 }
 
 func (t *Plan) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":      t.ID,
-		"spot_id": t.SpotID,
-		"date":    t.Date,
+		"id":            t.ID,
+		"spot_id":       t.SpotID,
+		"university_id": t.UniversityID,
+		"date":          t.Date,
 	}
 }
 
@@ -60,6 +65,7 @@ func (t *Plan) Ptrs() []interface{} {
 	return []interface{}{
 		&t.ID,
 		&t.SpotID,
+		&t.UniversityID,
 		&t.Date,
 		&t.CreatedAt,
 		&t.UpdatedAt,
@@ -102,13 +108,16 @@ func SelectAllPlan(ctx context.Context, txn *sql.Tx) ([]*Plan, error) {
 	return res, nil
 }
 
-func SelectPlanBySpotIDAndDate(ctx context.Context, txn *sql.Tx, spot_id *string, date **time.Time) ([]*Plan, error) {
+func SelectPlanBySpotIDAndDateAndUniversityID(ctx context.Context, txn *sql.Tx, spot_id *string, date **time.Time, university_id *string) ([]*Plan, error) {
 	eq := squirrel.Eq{}
 	if spot_id != nil {
 		eq["spot_id"] = *spot_id
 	}
 	if date != nil {
 		eq["date"] = *date
+	}
+	if university_id != nil {
+		eq["university_id"] = *university_id
 	}
 	query, params, err := squirrel.
 		Select(PlanAllColumns...).
@@ -226,13 +235,16 @@ func UpsertPlan(ctx context.Context, txn *sql.Tx, record Plan) error {
 	return nil
 }
 
-func DeletePlanBySpotIDAndDate(ctx context.Context, txn *sql.Tx, spot_id *string, date **time.Time) error {
+func DeletePlanBySpotIDAndDateAndUniversityID(ctx context.Context, txn *sql.Tx, spot_id *string, date **time.Time, university_id *string) error {
 	eq := squirrel.Eq{}
 	if spot_id != nil {
 		eq["spot_id"] = *spot_id
 	}
 	if date != nil {
 		eq["date"] = *date
+	}
+	if university_id != nil {
+		eq["university_id"] = *university_id
 	}
 
 	query, params, err := squirrel.

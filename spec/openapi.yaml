@@ -229,9 +229,6 @@ components:
         address:
           type: string
           description: "住所"
-        prefecture:
-          type: string
-          description: "都道府県"
     Message:
       type: object
       properties:

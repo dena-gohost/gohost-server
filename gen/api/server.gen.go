@@ -38,9 +38,6 @@ type Spot struct {
 	// 心霊スポットのURL
 	ImageUrl *string `json:"image_url,omitempty"`
 	Name     *string `json:"name,omitempty"`
-
-	// 都道府県
-	Prefecture *string `json:"prefecture,omitempty"`
 }
 
 // University defines model for University.
