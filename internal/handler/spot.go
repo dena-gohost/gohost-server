@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/dena-gohost/gohost-server/internal/handler/mock"
-
 	"github.com/labstack/echo/v4"
 
 	"github.com/dena-gohost/gohost-server/gen/api"
@@ -42,8 +40,7 @@ func (s *Server) GetSpots(ec echo.Context, params api.GetSpotsParams) error {
 		return echoutil.ErrInternal(ec, err)
 	}
 
-	_ = spots
-	return ec.JSON(http.StatusOK, &mock.Spots)
+	return ec.JSON(http.StatusOK, spots)
 }
 
 func (s *Server) GetSpotsSpotId(ec echo.Context, spotId string) error {
@@ -61,8 +58,7 @@ func (s *Server) GetSpotsSpotId(ec echo.Context, spotId string) error {
 		return echoutil.ErrInternal(ec, err)
 	}
 
-	_ = spot
-	return ec.JSON(http.StatusOK, &mock.Spots[0])
+	return ec.JSON(http.StatusOK, spot)
 }
 
 func (s *Server) PostSpotsSpotIdEntry(ec echo.Context, spotId string) error {
@@ -88,6 +84,7 @@ func (s *Server) PostSpotsSpotIdEntry(ec echo.Context, spotId string) error {
 	msg, err := service.EntrySpot(
 		ctx,
 		txn,
+		spotId,
 		user,
 		service.WithEntrySpotDate(req.Date),
 	)
@@ -95,7 +92,9 @@ func (s *Server) PostSpotsSpotIdEntry(ec echo.Context, spotId string) error {
 		return echoutil.ErrInternal(ec, err)
 	}
 
-	_ = msg
-	ret := "エントリー完了"
-	return ec.JSON(http.StatusOK, &ret)
+	if err := txn.Commit(); err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+
+	return ec.JSON(http.StatusOK, msg)
 }

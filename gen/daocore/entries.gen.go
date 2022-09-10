@@ -17,6 +17,7 @@ const EntryTableName = "entries"
 var EntryAllColumns = []string{
 	"id",
 	"user_id",
+	"university_id",
 	"date",
 	"spot_id",
 	"created_at",
@@ -26,6 +27,7 @@ var EntryAllColumns = []string{
 var EntryColumnsWOMagics = []string{
 	"id",
 	"user_id",
+	"university_id",
 	"date",
 	"spot_id",
 }
@@ -35,18 +37,20 @@ var EntryPrimaryKeyColumns = []string{
 }
 
 type Entry struct {
-	ID        string
-	UserID    string
-	Date      *time.Time
-	SpotID    string
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+	ID           string
+	UserID       string
+	UniversityID string
+	Date         *time.Time
+	SpotID       string
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
 }
 
 func (t *Entry) Values() []interface{} {
 	return []interface{}{
 		t.ID,
 		t.UserID,
+		t.UniversityID,
 		t.Date,
 		t.SpotID,
 	}
@@ -54,10 +58,11 @@ func (t *Entry) Values() []interface{} {
 
 func (t *Entry) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":      t.ID,
-		"user_id": t.UserID,
-		"date":    t.Date,
-		"spot_id": t.SpotID,
+		"id":            t.ID,
+		"user_id":       t.UserID,
+		"university_id": t.UniversityID,
+		"date":          t.Date,
+		"spot_id":       t.SpotID,
 	}
 }
 
@@ -65,6 +70,7 @@ func (t *Entry) Ptrs() []interface{} {
 	return []interface{}{
 		&t.ID,
 		&t.UserID,
+		&t.UniversityID,
 		&t.Date,
 		&t.SpotID,
 		&t.CreatedAt,
@@ -108,42 +114,16 @@ func SelectAllEntry(ctx context.Context, txn *sql.Tx) ([]*Entry, error) {
 	return res, nil
 }
 
-func SelectEntryByDate(ctx context.Context, txn *sql.Tx, date **time.Time) ([]*Entry, error) {
+func SelectEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx, date **time.Time, spot_id *string, university_id *string) ([]*Entry, error) {
 	eq := squirrel.Eq{}
 	if date != nil {
 		eq["date"] = *date
 	}
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Entry, 0)
-	for rows.Next() {
-		t, err := IterateEntry(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
-}
-
-func SelectEntryBySpotID(ctx context.Context, txn *sql.Tx, spot_id *string) ([]*Entry, error) {
-	eq := squirrel.Eq{}
 	if spot_id != nil {
 		eq["spot_id"] = *spot_id
+	}
+	if university_id != nil {
+		eq["university_id"] = *university_id
 	}
 	query, params, err := squirrel.
 		Select(EntryAllColumns...).
@@ -316,33 +296,16 @@ func UpsertEntry(ctx context.Context, txn *sql.Tx, record Entry) error {
 	return nil
 }
 
-func DeleteEntryByDate(ctx context.Context, txn *sql.Tx, date **time.Time) error {
+func DeleteEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx, date **time.Time, spot_id *string, university_id *string) error {
 	eq := squirrel.Eq{}
 	if date != nil {
 		eq["date"] = *date
 	}
-
-	query, params, err := squirrel.
-		Delete(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
-}
-
-func DeleteEntryBySpotID(ctx context.Context, txn *sql.Tx, spot_id *string) error {
-	eq := squirrel.Eq{}
 	if spot_id != nil {
 		eq["spot_id"] = *spot_id
+	}
+	if university_id != nil {
+		eq["university_id"] = *university_id
 	}
 
 	query, params, err := squirrel.

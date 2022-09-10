@@ -24,6 +24,13 @@
               }
             },
             {
+              "name": "university_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
               "name": "date",
               "datatype": {
                 "type": "date"
@@ -70,14 +77,16 @@
                   "datatype": {
                     "type": "date"
                   }
-                }
-              ]
-            },
-            {
-              "name": "spot_id",
-              "fields": [
+                },
                 {
                   "name": "spot_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                },
+                {
+                  "name": "university_id",
                   "datatype": {
                     "type": "char",
                     "prec": 36
@@ -216,6 +225,13 @@
               }
             },
             {
+              "name": "university_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
               "name": "date",
               "datatype": {
                 "type": "date"
@@ -261,6 +277,13 @@
                   "name": "date",
                   "datatype": {
                     "type": "date"
+                  }
+                },
+                {
+                  "name": "university_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
                   }
                 }
               ]
