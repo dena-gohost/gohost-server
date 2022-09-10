@@ -8,6 +8,11 @@ gen-api:
 	mkdir -p ./gen/api/
 	oapi-codegen --config config/oapi-codegen/server.yaml ./spec/openapi.yaml
 
+.PHONE: render-api
+render-api:
+	cd ./spec
+	npx redoc-cli build openapi.yaml --options.theme.colors.primary.main=orange
+
 .PHONY: __init-db-args
 __init-db-args:
 ifndef DB_HOST

@@ -85,3 +85,9 @@ $ make gen-db
 ```shell
 $ make gen-api
 ```
+
+### openapi から HTML のレンダー
+
+```shell
+$ make render-api
+```
