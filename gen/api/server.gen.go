@@ -77,7 +77,8 @@ type PostRegisterJSONBody = User
 
 // GetSpotsParams defines parameters for GetSpots.
 type GetSpotsParams struct {
-	Date openapi_types.Date `form:"date" json:"date"`
+	Date  openapi_types.Date `form:"date" json:"date"`
+	Limit *int               `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // PostSpotsSpotIdEntryJSONBody defines parameters for PostSpotsSpotIdEntry.
@@ -119,7 +120,7 @@ type ServerInterface interface {
 	GetSpots(ctx echo.Context, params GetSpotsParams) error
 	// 肝試しスポット
 	// (GET /spots/{spot_id})
-	GetSpotsSpotId(ctx echo.Context, spotId int) error
+	GetSpotsSpotId(ctx echo.Context, spotId string) error
 	// どの肝試しスポットにするかを決定
 	// (POST /spots/{spot_id}/entry)
 	PostSpotsSpotIdEntry(ctx echo.Context, spotId string) error
@@ -227,6 +228,13 @@ func (w *ServerInterfaceWrapper) GetSpots(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
 	}
 
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetSpots(ctx, params)
 	return err
@@ -236,7 +244,7 @@ func (w *ServerInterfaceWrapper) GetSpots(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetSpotsSpotId(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "spot_id" -------------
-	var spotId int
+	var spotId string
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "spot_id", runtime.ParamLocationPath, ctx.Param("spot_id"), &spotId)
 	if err != nil {
