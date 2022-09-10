@@ -1,2 +1,3 @@
-DROP TABLE users;
-DROP TABLE universities;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS genders;
+DROP TABLE IF EXISTS universities;

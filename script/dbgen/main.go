@@ -27,6 +27,7 @@ const (
 	Int       DataType = "int"
 	BigInt    DataType = "bigint"
 	TimeStamp DataType = "timestamp"
+	Date      DataType = "date"
 	Float     DataType = "float"
 )
 
@@ -38,6 +39,7 @@ var golangTypeMapper = map[DataType]string{
 	Int:       "int",
 	BigInt:    "int",
 	TimeStamp: "*time.Time",
+	Date:      "*time.Time",
 	Float:     "float32",
 }
 

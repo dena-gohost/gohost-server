@@ -12,6 +12,32 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func (s *Server) GetRegister(ec echo.Context) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	txn, err := s.db.Begin()
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+	defer txn.Rollback()
+
+	gs, err := service.ListGender(ctx, txn)
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+	us, err := service.ListUniversities(ctx, txn)
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+
+	ret := &api.GetRegisterResponse{
+		Genders:      gs,
+		Universities: us,
+	}
+	return ec.JSON(http.StatusOK, &ret)
+}
+
 func (s *Server) PostRegister(ec echo.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -15,16 +15,25 @@ import (
 func Register(ctx context.Context, txn *sql.Tx, user *api.User) (*api.Message, error) {
 	id := uuid.NewString()
 	u := &daocore.User{
-		ID:        id,
-		FirstName: *user.FirstName,
-		LastName:  *user.LastName,
-		Email:     *user.Email,
-		Password:  crypto.Encrypto(*user.Password),
+		ID:           id,
+		FirstName:    *user.FirstName,
+		LastName:     *user.LastName,
+		UserName:     *user.UserName,
+		Email:        *user.Email,
+		Password:     crypto.Encrypto(*user.Password),
+		UniversityID: *user.UniversityId,
+		BirthDate:    &user.BirthDate.Time,
+		Year:         *user.Year,
+		GenderID:     *user.GenderId,
+		IconUrl:      *user.IconUrl,
+		InstagramID:  *user.InstagramId,
 	}
+
 	if err := daocore.InsertUser(ctx, txn, []*daocore.User{u}); err != nil {
 		return nil, err
 	}
 	msg := "successfully registered"
+
 	return &api.Message{&msg}, nil
 }
 
@@ -33,6 +42,7 @@ func Login(ctx context.Context, txn *sql.Tx, user *api.User) (*api.Message, stri
 	if err != nil {
 		return nil, "", err
 	}
+
 	// パスワード認証
 	pw, err := crypto.Decrypto(u.Password)
 	if err != nil {
@@ -41,6 +51,7 @@ func Login(ctx context.Context, txn *sql.Tx, user *api.User) (*api.Message, stri
 	if user.Password == nil || pw != *user.Password {
 		return nil, "", err
 	}
+
 	// セッション追加
 	if err := daocore.DeleteOneUserSessionByUserID(ctx, txn, &u.ID); err != nil {
 		return nil, "", err

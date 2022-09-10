@@ -9,7 +9,7 @@ func strev(s string) *string {
 var Spots = []*api.Spot{
 	{
 		Id:          strev("7ed0c28c-890a-4c3e-8c0d-6db93969168c"),
-		Name:        strev("油井グランドホテル "),
+		Name:        strev("油井グランドホテル"),
 		Description: strev("千葉県東金市油井にある廃ホテル。正式名称『油井グランドホテル』。心霊スポットとして知られていたが、ある事件を境に全国的に有名となる。「二階にある焦げた部屋が特に危険」という噂がある。"),
 		ImageUrl:    strev("https://shinreispot.com/wp-content/uploads/2018/02/yjimage.jpg"),
 		Address:     strev("千葉県東金市油井263-1"),

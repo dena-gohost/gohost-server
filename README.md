@@ -33,7 +33,7 @@ post
 ```shell
 $ curl -XPOST \
   -H "content-type: application/json" \
-  -d '{"first_name": "dena", "last_name": "gohost", "email": "gohost@dena.co.jp", "password": "passw0rd"}' \
+  -d '{"first_name": "DeNA", "last_name": "ハッカソン", "user_name": "denason", "email": "hackathon@dena.ac.jp", "password": "passw0rd", "university_id": "06faba8c-5d9f-495c-a9d7-3bc82a040398", "birth_date": "1999-09-10", "year": 4, "gender_id": "1", "icon_url": "https://www.photo-ac.com/assets/img/ai_model_v2/model_6.png", "instagram_id": "dummy"}' \
   localhost:5050/register
 ```
 
@@ -42,7 +42,7 @@ $ curl -XPOST \
 ```shell
 $ curl -XPOST \
   -H "content-type: application/json" \
-  -d '{"email": "gohost@dena.co.jp", "password": "passw0rd"}' \
+  -d '{"email": "hackathon@dena.ac.jp", "password": "passw0rd"}' \
   --dump-header - \
   localhost:5050/login
 ```
