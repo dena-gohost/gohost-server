@@ -10,8 +10,7 @@ gen-api:
 
 .PHONE: render-api
 render-api:
-	cd ./spec
-	npx redoc-cli build openapi.yaml --options.theme.colors.primary.main=orange
+	cd spec && npx redoc-cli build openapi.yaml --options.theme.colors.primary.main=orange && cd -
 
 .PHONY: __init-db-args
 __init-db-args:
