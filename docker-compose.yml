@@ -1,14 +1,14 @@
 version: "3"
 services:
-  gh-app:
-    build: .
-    tty: true
-    restart: always
-    ports:
-      - "5050:3000"
-    command: go run ./cmd/gohost-server/main.go
-    depends_on:
-      - db
+  # gh-app:
+  #   build: .
+  #   tty: true
+  #   restart: always
+  #   ports:
+  #     - "5050:3000"
+  #   command: go run ./cmd/gohost-server/main.go
+  #   depends_on:
+  #     - db
   gh-adminer:
     container_name: gh-adminer
     hostname: adminer
