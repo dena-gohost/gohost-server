@@ -2,8 +2,9 @@ package handler
 
 import (
 	"context"
-	"github.com/dena-gohost/gohost-server/internal/handler/mock"
 	"net/http"
+
+	"github.com/dena-gohost/gohost-server/internal/handler/mock"
 
 	"github.com/labstack/echo/v4"
 

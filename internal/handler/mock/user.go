@@ -1,9 +1,11 @@
 package mock
 
 import (
-	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
-	"github.com/dena-gohost/gohost-server/gen/api"
 	"time"
+
+	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
+
+	"github.com/dena-gohost/gohost-server/gen/api"
 )
 
 func daterev(t time.Time) *openapi_types.Date {

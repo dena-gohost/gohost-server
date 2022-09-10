@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
 	"github.com/dena-gohost/gohost-server/gen/api"
 	"github.com/dena-gohost/gohost-server/internal/handler/mock"
-	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 func (s *Server) GetRegister(ec echo.Context) error {
