@@ -224,7 +224,7 @@ components:
           type: string
         description:
           type: string
-        image_urls:
+        image_url:
           type: string
           description: "心霊スポットのURL"
         address:

@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"github.com/deepmap/oapi-codegen/pkg/types"
+
 	"github.com/dena-gohost/gohost-server/gen/api"
 	"github.com/dena-gohost/gohost-server/gen/daocore"
-	"time"
 )
 
 type listSpotsOptions struct {

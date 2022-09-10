@@ -2,13 +2,15 @@ package handler
 
 import (
 	"context"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
 	"github.com/dena-gohost/gohost-server/gen/api"
 	"github.com/dena-gohost/gohost-server/internal/handler/middleware"
 	"github.com/dena-gohost/gohost-server/internal/handler/validator"
 	"github.com/dena-gohost/gohost-server/internal/service"
 	"github.com/dena-gohost/gohost-server/pkg/echoutil"
-	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 func (s *Server) GetSpots(ec echo.Context, params api.GetSpotsParams) error {
