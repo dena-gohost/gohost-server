@@ -233,7 +233,7 @@ components:
         prefecture:
           type: string
           description: "都道府県"
-        station:
+        meeting_station:
           type: string
           description: "集合駅(一覧画面では返さない)"
         meeting_hour:
