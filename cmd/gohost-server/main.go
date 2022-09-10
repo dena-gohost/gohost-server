@@ -2,10 +2,15 @@ package main
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
+
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
@@ -14,6 +19,7 @@ import (
 	"github.com/dena-gohost/gohost-server/gen/api"
 	environment "github.com/dena-gohost/gohost-server/internal/env"
 	"github.com/dena-gohost/gohost-server/internal/handler"
+	httpmiddleware "github.com/dena-gohost/gohost-server/internal/handler/middleware"
 	"github.com/dena-gohost/gohost-server/pkg/echoutil"
 	"github.com/dena-gohost/gohost-server/pkg/logger"
 )
@@ -45,6 +51,20 @@ func run() error {
 		return err
 	}
 
+	ss, err := base64.StdEncoding.DecodeString(env.SessionSecret)
+	if err != nil {
+		return err
+	}
+	sessStore := sessions.NewCookieStore(ss)
+	sessStore.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   env.SessionMaxAge,
+		Secure:   !env.SessionCookieInsecure,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	}
+
+	ignorePaths := []string{"/login", "/register"}
 	e.Use(
 		middleware.Recover(),
 		middleware.Logger(),
@@ -52,6 +72,8 @@ func run() error {
 		middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowCredentials: true,
 		}),
+		session.Middleware(sessStore),
+		httpmiddleware.SessionMiddleware(db, ignorePaths),
 		middleware.BodyDump(func(ec echo.Context, req, res []byte) {
 			if ec.Response().Status < 400 {
 				return
