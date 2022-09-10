@@ -6,6 +6,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
@@ -30,13 +31,16 @@ type Spot struct {
 
 	// 心霊スポットのURL
 	ImageUrls *string `json:"image_urls,omitempty"`
-	Name      *string `json:"name,omitempty"`
+
+	// 集合時間(一覧画面では返さない)
+	MeetingHour *time.Time `json:"meeting_hour,omitempty"`
+	Name        *string    `json:"name,omitempty"`
 
 	// 都道府県
 	Prefecture *string `json:"prefecture,omitempty"`
 
-	// 評価
-	Rate *float32 `json:"rate,omitempty"`
+	// 集合駅(一覧画面では返さない)
+	Station *string `json:"station,omitempty"`
 }
 
 // User defines model for User.
@@ -65,11 +69,6 @@ type User struct {
 type PostLoginJSONBody struct {
 	Email    *string `json:"email,omitempty"`
 	Password *string `json:"password,omitempty"`
-}
-
-// GetPlansParams defines parameters for GetPlans.
-type GetPlansParams struct {
-	Date openapi_types.Date `form:"date" json:"date"`
 }
 
 // PostRegisterJSONBody defines parameters for PostRegister.
@@ -103,12 +102,9 @@ type ServerInterface interface {
 	// ログアウト
 	// (POST /logout)
 	PostLogout(ctx echo.Context) error
-	// 肝試しの確定日程の情報一覧(過去情報)
-	// (GET /plans)
-	GetPlans(ctx echo.Context, params GetPlansParams) error
-	// 肝試しの確定日程の詳細情報
-	// (GET /plans/{plan_id})
-	GetPlansPlanId(ctx echo.Context, planId string) error
+	// 肝試しの確定日程の情報
+	// (GET /plan)
+	GetPlan(ctx echo.Context) error
 	// ユーザー登録に必要な情報
 	// (GET /register)
 	GetRegister(ctx echo.Context) error
@@ -153,41 +149,14 @@ func (w *ServerInterfaceWrapper) PostLogout(ctx echo.Context) error {
 	return err
 }
 
-// GetPlans converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPlans(ctx echo.Context) error {
+// GetPlan converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlan(ctx echo.Context) error {
 	var err error
 
 	ctx.Set(CookieAuthScopes, []string{""})
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetPlansParams
-	// ------------- Required query parameter "date" -------------
-
-	err = runtime.BindQueryParameter("form", true, true, "date", ctx.QueryParams(), &params.Date)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
-	}
-
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPlans(ctx, params)
-	return err
-}
-
-// GetPlansPlanId converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPlansPlanId(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "plan_id" -------------
-	var planId string
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "plan_id", runtime.ParamLocationPath, ctx.Param("plan_id"), &planId)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter plan_id: %s", err))
-	}
-
-	ctx.Set(CookieAuthScopes, []string{""})
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetPlansPlanId(ctx, planId)
+	err = w.Handler.GetPlan(ctx)
 	return err
 }
 
@@ -306,8 +275,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 	router.POST(baseURL+"/logout", wrapper.PostLogout)
-	router.GET(baseURL+"/plans", wrapper.GetPlans)
-	router.GET(baseURL+"/plans/:plan_id", wrapper.GetPlansPlanId)
+	router.GET(baseURL+"/plan", wrapper.GetPlan)
 	router.GET(baseURL+"/register", wrapper.GetRegister)
 	router.POST(baseURL+"/register", wrapper.PostRegister)
 	router.GET(baseURL+"/spots", wrapper.GetSpots)

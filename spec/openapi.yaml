@@ -163,36 +163,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /plans:
+  /plan:
     get:
-      summary: "肝試しの確定日程の情報一覧(過去情報)"
-      tags:
-        - "plan"
-      parameters:
-        - in: query
-          required: true
-          name: date
-          schema:
-            type: string
-            format: date
-      responses:
-        200:
-          description: "ok"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Spot"
-  /plans/{plan_id}:
-    parameters:
-      - in: path
-        required: true
-        name: plan_id
-        schema:
-          type: string
-    get:
-      summary: "肝試しの確定日程の詳細情報"
+      summary: "肝試しの確定日程の情報"
       tags:
         - "plan"
       responses:
@@ -201,7 +174,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Spot"
+                type: object
+                properties:
+                  spot:
+                    $ref: "#/components/schemas/Spot"
+                  users:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
 components:
   schemas:
     User:
@@ -253,9 +233,13 @@ components:
         prefecture:
           type: string
           description: "都道府県"
-        rate:
-          type: number
-          description: "評価"
+        station:
+          type: string
+          description: "集合駅(一覧画面では返さない)"
+        meeting_hour:
+          type: string
+          format: "date-time"
+          description: "集合時間(一覧画面では返さない)"
     Message:
       type: object
       properties:
