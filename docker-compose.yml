@@ -1,16 +1,33 @@
-version: '3'
+version: "3"
 services:
-  db:
-    image: mysql:latest
+  gh-app:
+    build: .
+    tty: true
+    restart: always
+    ports:
+      - "3000:3000"
+    command: go run main.go
+    depends_on:
+      - gh-db
+  gh-adminer:
+    container_name: gh-adminer
+    hostname: adminer
+    image: adminer:4.8.1
+    restart: always
+    ports:
+      - 25750:8080
+    depends_on:
+      - gh-db
+  gh-db:
+    container_name: gh-db
+    ports:
+      - 3306:3306
+    volumes:
+      - "./mysql:/var/lib/mysql"
+    image: mysql/mysql-server
     restart: always
     environment:
-      MYSQL_USER: gohost
-      MYSQL_DATABASE: gohost
-      MYSQL_PASSWORD: passw0rd
-      MYSQL_ROOT_PASSWORD: passw0rd
-    volumes:
-      - dbdata:/var/lib/mysql
-    ports:
-      - "33066:3306"
-volumes:
-  dbdata:
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db
+      TZ: Asia/Tokyo
