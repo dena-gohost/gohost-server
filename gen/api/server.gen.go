@@ -34,13 +34,13 @@ type Spot struct {
 
 	// 集合時間(一覧画面では返さない)
 	MeetingHour *time.Time `json:"meeting_hour,omitempty"`
-	Name        *string    `json:"name,omitempty"`
+
+	// 集合駅(一覧画面では返さない)
+	MeetingStation *string `json:"meeting_station,omitempty"`
+	Name           *string `json:"name,omitempty"`
 
 	// 都道府県
 	Prefecture *string `json:"prefecture,omitempty"`
-
-	// 集合駅(一覧画面では返さない)
-	Station *string `json:"station,omitempty"`
 }
 
 // User defines model for User.
