@@ -1,11 +1,13 @@
 package handler
 
 import (
-	"github.com/dena-gohost/gohost-server/gen/api"
-	"github.com/dena-gohost/gohost-server/internal/handler/mock"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/dena-gohost/gohost-server/gen/api"
+	"github.com/dena-gohost/gohost-server/internal/handler/mock"
 )
 
 func (s *Server) GetPlan(ec echo.Context) error {
