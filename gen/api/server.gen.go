@@ -16,6 +16,15 @@ type Message struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// User defines model for User.
+type User struct {
+	Email     *string `json:"email,omitempty"`
+	FirstName *string `json:"first_name,omitempty"`
+	Id        *string `json:"id,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+	Password  *string `json:"password,omitempty"`
+}
+
 // PostLoginJSONBody defines parameters for PostLogin.
 type PostLoginJSONBody struct {
 	Email    *string `json:"email,omitempty"`
@@ -23,18 +32,13 @@ type PostLoginJSONBody struct {
 }
 
 // PostRegisterJSONBody defines parameters for PostRegister.
-type PostRegisterJSONBody struct {
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-	Password  *string `json:"password,omitempty"`
-}
+type PostRegisterJSONBody = User
 
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody PostLoginJSONBody
 
 // PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
-type PostRegisterJSONRequestBody PostRegisterJSONBody
+type PostRegisterJSONRequestBody = PostRegisterJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
