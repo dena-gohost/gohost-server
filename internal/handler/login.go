@@ -4,6 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/dena-gohost/gohost-server/internal/handler/middleware"
+	"github.com/dena-gohost/gohost-server/internal/handler/validator"
+	"github.com/dena-gohost/gohost-server/internal/service"
+
 	"github.com/labstack/echo/v4"
 
 	"github.com/dena-gohost/gohost-server/gen/api"
@@ -19,9 +23,28 @@ func (s *Server) PostLogin(ec echo.Context) error {
 		return echoutil.ErrBadRequest(ec, err)
 	}
 
-	_ = ctx
+	if err := (&validator.User{req}).Login(); err != nil {
+		return echoutil.ErrBadRequest(ec, err)
+	}
 
-	msg := "successfully logged in"
+	txn, err := s.db.Begin()
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+	defer txn.Rollback()
 
-	return ec.JSON(http.StatusOK, &msg)
+	msg, id, err := service.Login(ctx, txn, req)
+	if msg == nil || err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+
+	if err := txn.Commit(); err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+	ec, err = middleware.SetCookie(ec, id)
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+
+	return ec.JSON(http.StatusOK, msg)
 }

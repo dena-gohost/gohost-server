@@ -4,10 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-
 	"github.com/dena-gohost/gohost-server/gen/api"
+	"github.com/dena-gohost/gohost-server/internal/handler/validator"
+	"github.com/dena-gohost/gohost-server/internal/service"
 	"github.com/dena-gohost/gohost-server/pkg/echoutil"
+
+	"github.com/labstack/echo/v4"
 )
 
 func (s *Server) PostRegister(ec echo.Context) error {
@@ -19,8 +21,24 @@ func (s *Server) PostRegister(ec echo.Context) error {
 		return echoutil.ErrBadRequest(ec, err)
 	}
 
-	_ = ctx
+	if err := (&validator.User{req}).Register(); err != nil {
+		return echoutil.ErrBadRequest(ec, err)
+	}
 
-	msg := "successfully registered"
-	return ec.JSON(http.StatusOK, &msg)
+	txn, err := s.db.Begin()
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+	defer txn.Rollback()
+
+	msg, err := service.Register(ctx, txn, req)
+	if msg == nil || err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+
+	if err := txn.Commit(); err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+
+	return ec.JSON(http.StatusOK, msg)
 }
