@@ -4,8 +4,8 @@ services:
     image: mysql:latest
     restart: always
     environment:
-      MYSQL_USER: http_server
-      MYSQL_DATABASE: http_server
+      MYSQL_USER: gohost
+      MYSQL_DATABASE: gohost
       MYSQL_PASSWORD: passw0rd
       MYSQL_ROOT_PASSWORD: passw0rd
     volumes:

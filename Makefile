@@ -1,6 +1,6 @@
 .PHONE: fix-lint
 fix-lint:
-	find . -print | grep --regex '.*\.go$$' | xargs goimports -w -local "github.com/nnaakkaaii/go-http-server-template"
+	find . -print | grep --regex '.*\.go$$' | xargs goimports -w -local "github.com/dena-gohost/gohost-server"
 
 .PHONY: gen-api
 gen-api:
@@ -19,20 +19,16 @@ ifndef DB_PORT
 	$(eval DB_PORT := 33066)
 endif
 ifndef DB_USER
-	$(warning DB_USER was not set; http_server is used)
-	$(eval DB_USER := http_server)
+	$(warning DB_USER was not set; gohost is used)
+	$(eval DB_USER := gohost)
 endif
 ifndef DB_PASS
 	$(warning DB_PASS was not set; passw0rd is used)
 	$(eval DB_PASS := passw0rd)
 endif
 ifndef DB_NAME
-	$(warning DB_NAME was not set; http_server is used)
-	$(eval DB_NAME := http_server)
-endif
-ifndef TEST_DB_NAME
-	$(warning TEST_DB_NAME was not set; test_http_server is used)
-	$(eval TEST_DB_NAME := test_http_server)
+	$(warning DB_NAME was not set; gohost is used)
+	$(eval DB_NAME := gohost)
 endif
 
 .PHONY: db-migrate
