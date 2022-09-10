@@ -11,30 +11,7 @@ paths:
         - "auth"
       responses:
         200:
-          description: "ok"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  universities:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                  genders:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
+          $ref: "#/components/responses/getRegisterResponse"
     post:
       summary: "新規ユーザー登録"
       tags:
@@ -170,18 +147,40 @@ paths:
         - "plan"
       responses:
         200:
+          $ref: "#/components/responses/getPlanResponse"
+  /plan/cancel:
+    post:
+      summary: "肝試しの日程キャンセル"
+      tags:
+        - "plan"
+      responses:
+        200:
           description: "ok"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  spot:
-                    $ref: "#/components/schemas/Spot"
-                  users:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Message"
+  /plan/finish:
+    get:
+      summary: "肝試しを終了する(メンバー取得)"
+      tags:
+        - "plan"
+      responses:
+        200:
+          $ref: "#/components/responses/getFinishPlanResponse"
+    post:
+      summary: "肝試しを終了する(メンバー評価)"
+      tags:
+        - "plan"
+      requestBody:
+        $ref: "#/components/requestBodies/postFinishPlanRequestBody"
+      responses:
+        200:
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
 components:
   schemas:
     User:
@@ -233,17 +232,85 @@ components:
         prefecture:
           type: string
           description: "都道府県"
-        meeting_station:
-          type: string
-          description: "集合駅(一覧画面では返さない)"
-        meeting_hour:
-          type: string
-          format: "date-time"
-          description: "集合時間(一覧画面では返さない)"
     Message:
       type: object
       properties:
         message:
           type: string
+    Gender:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    University:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        meeting_station:
+          type: string
+  requestBodies:
+    postFinishPlanRequestBody:
+      description: ユーザーへのgood
+      required: true
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                like:
+                  type: boolean
+  responses:
+    getRegisterResponse:
+      description: "ok"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              universities:
+                type: array
+                items:
+                  $ref: "#/components/schemas/University"
+              genders:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gender"
+    getPlanResponse:
+      description: "ok"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              meeting_station:
+                type: string
+                description: "集合駅(一覧画面では返さない)"
+              meeting_hour:
+                type: string
+                format: "date-time"
+                description: "集合時間(一覧画面では返さない)"
+              spot:
+                $ref: "#/components/schemas/Spot"
+              users:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    getFinishPlanResponse:
+      description: "ok"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/User"
 security:
   - cookieAuth: []

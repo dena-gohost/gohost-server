@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/dena-gohost/gohost-server/internal/handler/mock"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -40,7 +41,8 @@ func (s *Server) GetSpots(ec echo.Context, params api.GetSpotsParams) error {
 		return echoutil.ErrInternal(ec, err)
 	}
 
-	return ec.JSON(http.StatusOK, spots)
+	_ = spots
+	return ec.JSON(http.StatusOK, &mock.Spots)
 }
 
 func (s *Server) GetSpotsSpotId(ec echo.Context, spotId string) error {
@@ -58,7 +60,8 @@ func (s *Server) GetSpotsSpotId(ec echo.Context, spotId string) error {
 		return echoutil.ErrInternal(ec, err)
 	}
 
-	return ec.JSON(http.StatusOK, spot)
+	_ = spot
+	return ec.JSON(http.StatusOK, &mock.Spots[0])
 }
 
 func (s *Server) PostSpotsSpotIdEntry(ec echo.Context, spotId string) error {
@@ -91,5 +94,7 @@ func (s *Server) PostSpotsSpotIdEntry(ec echo.Context, spotId string) error {
 		return echoutil.ErrInternal(ec, err)
 	}
 
-	return ec.JSON(http.StatusOK, msg)
+	_ = msg
+	ret := "エントリー完了"
+	return ec.JSON(http.StatusOK, &ret)
 }

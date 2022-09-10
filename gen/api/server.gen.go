@@ -17,6 +17,12 @@ const (
 	CookieAuthScopes = "cookieAuth.Scopes"
 )
 
+// Gender defines model for Gender.
+type Gender struct {
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
+}
+
 // Message defines model for Message.
 type Message struct {
 	Message *string `json:"message,omitempty"`
@@ -31,16 +37,17 @@ type Spot struct {
 
 	// 心霊スポットのURL
 	ImageUrl *string `json:"image_url,omitempty"`
-
-	// 集合時間(一覧画面では返さない)
-	MeetingHour *time.Time `json:"meeting_hour,omitempty"`
-
-	// 集合駅(一覧画面では返さない)
-	MeetingStation *string `json:"meeting_station,omitempty"`
-	Name           *string `json:"name,omitempty"`
+	Name     *string `json:"name,omitempty"`
 
 	// 都道府県
 	Prefecture *string `json:"prefecture,omitempty"`
+}
+
+// University defines model for University.
+type University struct {
+	Id             *string `json:"id,omitempty"`
+	MeetingStation *string `json:"meeting_station,omitempty"`
+	Name           *string `json:"name,omitempty"`
 }
 
 // User defines model for User.
@@ -63,6 +70,32 @@ type User struct {
 
 	// 学年
 	Year *int `json:"year,omitempty"`
+}
+
+// GetFinishPlanResponse defines model for getFinishPlanResponse.
+type GetFinishPlanResponse = []User
+
+// GetPlanResponse defines model for getPlanResponse.
+type GetPlanResponse struct {
+	// 集合時間(一覧画面では返さない)
+	MeetingHour *time.Time `json:"meeting_hour,omitempty"`
+
+	// 集合駅(一覧画面では返さない)
+	MeetingStation *string `json:"meeting_station,omitempty"`
+	Spot           *Spot   `json:"spot,omitempty"`
+	Users          *[]User `json:"users,omitempty"`
+}
+
+// GetRegisterResponse defines model for getRegisterResponse.
+type GetRegisterResponse struct {
+	Genders      *[]Gender     `json:"genders,omitempty"`
+	Universities *[]University `json:"universities,omitempty"`
+}
+
+// PostFinishPlanRequestBody defines model for postFinishPlanRequestBody.
+type PostFinishPlanRequestBody = []struct {
+	Like   *bool   `json:"like,omitempty"`
+	UserId *string `json:"user_id,omitempty"`
 }
 
 // PostLoginJSONBody defines parameters for PostLogin.
@@ -88,6 +121,9 @@ type PostSpotsSpotIdEntryJSONBody struct {
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody PostLoginJSONBody
 
+// PostPlanFinishJSONRequestBody defines body for PostPlanFinish for application/json ContentType.
+type PostPlanFinishJSONRequestBody = PostFinishPlanRequestBody
+
 // PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
 type PostRegisterJSONRequestBody = PostRegisterJSONBody
 
@@ -105,6 +141,15 @@ type ServerInterface interface {
 	// 肝試しの確定日程の情報
 	// (GET /plan)
 	GetPlan(ctx echo.Context) error
+	// 肝試しの日程キャンセル
+	// (POST /plan/cancel)
+	PostPlanCancel(ctx echo.Context) error
+	// 肝試しを終了する(メンバー取得)
+	// (GET /plan/finish)
+	GetPlanFinish(ctx echo.Context) error
+	// 肝試しを終了する(メンバー評価)
+	// (POST /plan/finish)
+	PostPlanFinish(ctx echo.Context) error
 	// ユーザー登録に必要な情報
 	// (GET /register)
 	GetRegister(ctx echo.Context) error
@@ -157,6 +202,39 @@ func (w *ServerInterfaceWrapper) GetPlan(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetPlan(ctx)
+	return err
+}
+
+// PostPlanCancel converts echo context to params.
+func (w *ServerInterfaceWrapper) PostPlanCancel(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostPlanCancel(ctx)
+	return err
+}
+
+// GetPlanFinish converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlanFinish(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPlanFinish(ctx)
+	return err
+}
+
+// PostPlanFinish converts echo context to params.
+func (w *ServerInterfaceWrapper) PostPlanFinish(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostPlanFinish(ctx)
 	return err
 }
 
@@ -276,6 +354,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 	router.POST(baseURL+"/logout", wrapper.PostLogout)
 	router.GET(baseURL+"/plan", wrapper.GetPlan)
+	router.POST(baseURL+"/plan/cancel", wrapper.PostPlanCancel)
+	router.GET(baseURL+"/plan/finish", wrapper.GetPlanFinish)
+	router.POST(baseURL+"/plan/finish", wrapper.PostPlanFinish)
 	router.GET(baseURL+"/register", wrapper.GetRegister)
 	router.POST(baseURL+"/register", wrapper.PostRegister)
 	router.GET(baseURL+"/spots", wrapper.GetSpots)

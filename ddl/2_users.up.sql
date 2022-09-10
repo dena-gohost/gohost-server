@@ -1,8 +1,15 @@
+CREATE TABLE universities (
+    id CHAR(36) CHARACTER SET utf8 NOT NULL PRIMARY KEY COMMENT 'UUID',
+    name VARCHAR(128) NOT NULL,
+    UNIQUE (name)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
 CREATE TABLE users (
     id CHAR(36) CHARACTER SET utf8 NOT NULL PRIMARY KEY COMMENT 'UUID',
     first_name VARCHAR(128) NOT NULL,
     last_name VARCHAR(128) NOT NULL,
     email VARCHAR(128) NOT NULL,
     password VARCHAR(128) NOT NULL,
+    university_id CHAR(36) NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
     UNIQUE (email)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
