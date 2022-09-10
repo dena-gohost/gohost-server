@@ -24,7 +24,7 @@ $ go run ./cmd/gohost-server/main.go
 $ curl -XPOST \
   -H "content-type: application/json" \
   -d '{"first_name": "dena", "last_name": "gohost", "email": "gohost@dena.co.jp", "password": "passw0rd"}' \
-  http://54.65.169.242/register
+  localhost:5050/register
 ```
 
 #### login
@@ -33,15 +33,17 @@ $ curl -XPOST \
 $ curl -XPOST \
   -H "content-type: application/json" \
   -d '{"email": "gohost@dena.co.jp", "password": "passw0rd"}' \
-  localhost:5000/login
+  --dump-header - \
+  localhost:5050/login
 ```
 
 #### logout
 
 ```shell
 $ curl -XPOST \
+  -H "cookie: ${COOKIE}" \
   -H "content-type: application/json" \
-  localhost:5000/logout
+  localhost:5050/logout
 ```
 
 

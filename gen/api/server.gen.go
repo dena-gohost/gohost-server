@@ -4,6 +4,11 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
+	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 	"github.com/labstack/echo/v4"
 )
 
@@ -16,13 +21,44 @@ type Message struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// Spot defines model for Spot.
+type Spot struct {
+	// 住所
+	Address     *string `json:"address,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Id          *string `json:"id,omitempty"`
+
+	// 心霊スポットのURL
+	ImageUrls *string `json:"image_urls,omitempty"`
+	Name      *string `json:"name,omitempty"`
+
+	// 都道府県
+	Prefecture *string `json:"prefecture,omitempty"`
+
+	// 評価
+	Rate *float32 `json:"rate,omitempty"`
+}
+
 // User defines model for User.
 type User struct {
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	Id        *string `json:"id,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-	Password  *string `json:"password,omitempty"`
+	BirthDate *openapi_types.Date `json:"birth_date,omitempty"`
+	Email     *string             `json:"email,omitempty"`
+	FirstName *string             `json:"first_name,omitempty"`
+	GenderId  *string             `json:"gender_id,omitempty"`
+
+	// アイコンのURLなど
+	IconUrl *string `json:"icon_url,omitempty"`
+	Id      *string `json:"id,omitempty"`
+
+	// インスタグラムのID
+	InstagramId  *string `json:"instagram_id,omitempty"`
+	LastName     *string `json:"last_name,omitempty"`
+	Password     *string `json:"password,omitempty"`
+	UniversityId *string `json:"university_id,omitempty"`
+	UserName     *string `json:"user_name,omitempty"`
+
+	// 学年
+	Year *int `json:"year,omitempty"`
 }
 
 // PostLoginJSONBody defines parameters for PostLogin.
@@ -31,14 +67,32 @@ type PostLoginJSONBody struct {
 	Password *string `json:"password,omitempty"`
 }
 
+// GetPlansParams defines parameters for GetPlans.
+type GetPlansParams struct {
+	Date openapi_types.Date `form:"date" json:"date"`
+}
+
 // PostRegisterJSONBody defines parameters for PostRegister.
 type PostRegisterJSONBody = User
+
+// GetSpotsParams defines parameters for GetSpots.
+type GetSpotsParams struct {
+	Date openapi_types.Date `form:"date" json:"date"`
+}
+
+// PostSpotsSpotIdEntryJSONBody defines parameters for PostSpotsSpotIdEntry.
+type PostSpotsSpotIdEntryJSONBody struct {
+	Date *openapi_types.Date `json:"date,omitempty"`
+}
 
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody PostLoginJSONBody
 
 // PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
 type PostRegisterJSONRequestBody = PostRegisterJSONBody
+
+// PostSpotsSpotIdEntryJSONRequestBody defines body for PostSpotsSpotIdEntry for application/json ContentType.
+type PostSpotsSpotIdEntryJSONRequestBody PostSpotsSpotIdEntryJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -48,9 +102,27 @@ type ServerInterface interface {
 	// ログアウト
 	// (POST /logout)
 	PostLogout(ctx echo.Context) error
+	// 肝試しの確定日程の情報一覧(過去情報)
+	// (GET /plans)
+	GetPlans(ctx echo.Context, params GetPlansParams) error
+	// 肝試しの確定日程の詳細情報
+	// (GET /plans/{plan_id})
+	GetPlansPlanId(ctx echo.Context, planId string) error
+	// ユーザー登録に必要な情報
+	// (GET /register)
+	GetRegister(ctx echo.Context) error
 	// 新規ユーザー登録
 	// (POST /register)
 	PostRegister(ctx echo.Context) error
+	// 肝試しスポットの一覧取得
+	// (GET /spots)
+	GetSpots(ctx echo.Context, params GetSpotsParams) error
+	// 肝試しスポット
+	// (GET /spots/{spot_id})
+	GetSpotsSpotId(ctx echo.Context, spotId int) error
+	// どの肝試しスポットにするかを決定
+	// (POST /spots/{spot_id}/entry)
+	PostSpotsSpotIdEntry(ctx echo.Context, spotId string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -80,6 +152,55 @@ func (w *ServerInterfaceWrapper) PostLogout(ctx echo.Context) error {
 	return err
 }
 
+// GetPlans converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlans(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPlansParams
+	// ------------- Required query parameter "date" -------------
+
+	err = runtime.BindQueryParameter("form", true, true, "date", ctx.QueryParams(), &params.Date)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPlans(ctx, params)
+	return err
+}
+
+// GetPlansPlanId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlansPlanId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "plan_id" -------------
+	var planId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "plan_id", runtime.ParamLocationPath, ctx.Param("plan_id"), &planId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter plan_id: %s", err))
+	}
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetPlansPlanId(ctx, planId)
+	return err
+}
+
+// GetRegister converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRegister(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetRegister(ctx)
+	return err
+}
+
 // PostRegister converts echo context to params.
 func (w *ServerInterfaceWrapper) PostRegister(ctx echo.Context) error {
 	var err error
@@ -88,6 +209,62 @@ func (w *ServerInterfaceWrapper) PostRegister(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.PostRegister(ctx)
+	return err
+}
+
+// GetSpots converts echo context to params.
+func (w *ServerInterfaceWrapper) GetSpots(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSpotsParams
+	// ------------- Required query parameter "date" -------------
+
+	err = runtime.BindQueryParameter("form", true, true, "date", ctx.QueryParams(), &params.Date)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter date: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetSpots(ctx, params)
+	return err
+}
+
+// GetSpotsSpotId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetSpotsSpotId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "spot_id" -------------
+	var spotId int
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "spot_id", runtime.ParamLocationPath, ctx.Param("spot_id"), &spotId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter spot_id: %s", err))
+	}
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetSpotsSpotId(ctx, spotId)
+	return err
+}
+
+// PostSpotsSpotIdEntry converts echo context to params.
+func (w *ServerInterfaceWrapper) PostSpotsSpotIdEntry(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "spot_id" -------------
+	var spotId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "spot_id", runtime.ParamLocationPath, ctx.Param("spot_id"), &spotId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter spot_id: %s", err))
+	}
+
+	ctx.Set(CookieAuthScopes, []string{""})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.PostSpotsSpotIdEntry(ctx, spotId)
 	return err
 }
 
@@ -121,6 +298,12 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 	router.POST(baseURL+"/logout", wrapper.PostLogout)
+	router.GET(baseURL+"/plans", wrapper.GetPlans)
+	router.GET(baseURL+"/plans/:plan_id", wrapper.GetPlansPlanId)
+	router.GET(baseURL+"/register", wrapper.GetRegister)
 	router.POST(baseURL+"/register", wrapper.PostRegister)
+	router.GET(baseURL+"/spots", wrapper.GetSpots)
+	router.GET(baseURL+"/spots/:spot_id", wrapper.GetSpotsSpotId)
+	router.POST(baseURL+"/spots/:spot_id/entry", wrapper.PostSpotsSpotIdEntry)
 
 }

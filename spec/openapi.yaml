@@ -115,22 +115,6 @@ paths:
                       $ref: "#/components/schemas/Spot"
                   total_count:
                     type: integer
-    post:
-      summary: "肝試しスポットの追加"
-      tags:
-        - "match"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Spot"
-      responses:
-        200:
-          description: "ok"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Spot"
   /spots/{spot_id}:
     parameters:
       - in: path
@@ -265,10 +249,8 @@ components:
         description:
           type: string
         image_urls:
-          type: array
-          items:
-            type: string
-            description: "心霊スポットのURL"
+          type: string
+          description: "心霊スポットのURL"
         address:
           type: string
           description: "住所"
