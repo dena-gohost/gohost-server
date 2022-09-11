@@ -37,7 +37,13 @@ func run() error {
 		return err
 	}
 
-	go startHealthCheck(env.Port)
+	errs := make(chan error, 1)
+	go func() {
+		errs <- startHealthCheck(env.Port)
+	}()
+	if err := <-errs; err != nil {
+		return err
+	}
 
 	w := worker.NewMatchingWorker(&l, db)
 	w.Run()
