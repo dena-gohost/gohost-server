@@ -80,6 +80,50 @@ func GetPlan(
 	}, err
 }
 
+func PostPlanCancel(
+	ctx context.Context,
+	txn *sql.Tx,
+	user *daocore.User,
+) error {
+	userPlan, err := daocore.SelectOneUserPlanByUserID(ctx, txn, &user.ID)
+	if err != nil {
+		return err
+	}
+	now := time.Now()
+	userPlan.Canceled = &now
+	return daocore.UpdateUserPlan(ctx, txn, userPlan)
+}
+
+func GetPlanUsers(ctx context.Context,
+	txn *sql.Tx,
+	user *daocore.User) (*[]api.User, error) {
+	userPlan, err := daocore.SelectOneUserPlanByUserID(ctx, txn, &user.ID)
+	if err != nil {
+		return nil, err
+	}
+	userPlans, err := daocore.SelectUserPlanByPlanID(ctx, txn, &userPlan.PlanID)
+	users := make([]api.User, 0)
+	for _, up := range userPlans {
+		tmpUser, err := daocore.SelectOneUserByID(ctx, txn, &up.UserID)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, api.User{
+			BirthDate:    daterev(*user.BirthDate),
+			Email:        &tmpUser.Email,
+			FirstName:    &tmpUser.FirstName,
+			GenderId:     &tmpUser.GenderID,
+			IconUrl:      &tmpUser.IconUrl,
+			Id:           &tmpUser.ID,
+			LastName:     &tmpUser.LastName,
+			UniversityId: &tmpUser.UniversityID,
+			UserName:     &tmpUser.UserName,
+			Year:         &tmpUser.Year,
+		})
+	}
+	return &users, nil
+}
+
 const minMatchNum = 3
 
 type spotUnivDate struct {
