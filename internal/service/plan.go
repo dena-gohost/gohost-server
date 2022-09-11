@@ -12,6 +12,10 @@ import (
 	"github.com/dena-gohost/gohost-server/gen/daocore"
 )
 
+var (
+	defaultMeetingHour = time.Date(2000, 1, 1, 19, 0, 0, 0, time.Local)
+)
+
 func daterev(t time.Time) *openapi_types.Date {
 	return &openapi_types.Date{t}
 }
@@ -21,12 +25,12 @@ func GetPlan(
 	txn *sql.Tx,
 	user *daocore.User,
 ) (*api.GetPlanResponse, error) {
-	user_plan, err := daocore.SelectOneUserPlanByUserID(ctx, txn, &user.ID)
+	userPlan, err := daocore.SelectOneUserPlanByUserID(ctx, txn, &user.ID)
 
 	if err != nil {
 		return nil, err
 	}
-	plan, err := daocore.SelectOnePlanByID(ctx, txn, &user_plan.PlanID)
+	plan, err := daocore.SelectOnePlanByID(ctx, txn, &userPlan.PlanID)
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +42,12 @@ func GetPlan(
 	if err != nil {
 		return nil, err
 	}
-	user_plans, err := daocore.SelectUserPlanByPlanID(ctx, txn, &plan.ID)
+	userPlans, err := daocore.SelectUserPlanByPlanID(ctx, txn, &plan.ID)
 	if err != nil {
 		return nil, err
 	}
-	users := make([]api.User, 0, len(user_plans))
-	for _, up := range user_plans {
+	users := make([]api.User, 0, len(userPlans))
+	for _, up := range userPlans {
 		user, err := daocore.SelectOneUserByID(ctx, txn, &up.UserID)
 		if err != nil {
 			return nil, err
@@ -55,17 +59,15 @@ func GetPlan(
 			GenderId:     &user.GenderID,
 			IconUrl:      &user.IconUrl,
 			Id:           &user.ID,
-			InstagramId:  &user.InstagramID,
 			LastName:     &user.LastName,
-			Password:     &user.Password,
 			UniversityId: &user.UniversityID,
 			UserName:     &user.UserName,
 			Year:         &user.Year,
 		})
 	}
-	meeting_hour := time.Date(plan.Date.Year(), plan.Date.Month(), plan.Date.Day(), 19, 00, 00, 0, time.Local)
+	meetingHour := time.Date(plan.Date.Year(), plan.Date.Month(), plan.Date.Day(), defaultMeetingHour.Hour(), defaultMeetingHour.Minute(), defaultMeetingHour.Second(), defaultMeetingHour.Nanosecond(), time.Local)
 	return &api.GetPlanResponse{
-		MeetingHour:    &meeting_hour,
+		MeetingHour:    &meetingHour,
 		MeetingStation: &university.MeetingStation,
 		Spot: &api.Spot{
 			Address:     &spot.Address,
