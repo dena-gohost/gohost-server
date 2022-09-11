@@ -18,8 +18,6 @@ var UserPlanAllColumns = []string{
 	"id",
 	"user_id",
 	"plan_id",
-	"canceled",
-	"finished",
 	"created_at",
 	"updated_at",
 }
@@ -28,8 +26,6 @@ var UserPlanColumnsWOMagics = []string{
 	"id",
 	"user_id",
 	"plan_id",
-	"canceled",
-	"finished",
 }
 
 var UserPlanPrimaryKeyColumns = []string{
@@ -40,8 +36,6 @@ type UserPlan struct {
 	ID        int
 	UserID    string
 	PlanID    string
-	Canceled  *time.Time
-	Finished  *time.Time
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
 }
@@ -51,18 +45,14 @@ func (t *UserPlan) Values() []interface{} {
 		t.ID,
 		t.UserID,
 		t.PlanID,
-		t.Canceled,
-		t.Finished,
 	}
 }
 
 func (t *UserPlan) SetMap() map[string]interface{} {
 	return map[string]interface{}{
-		"id":       t.ID,
-		"user_id":  t.UserID,
-		"plan_id":  t.PlanID,
-		"canceled": t.Canceled,
-		"finished": t.Finished,
+		"id":      t.ID,
+		"user_id": t.UserID,
+		"plan_id": t.PlanID,
 	}
 }
 
@@ -71,8 +61,6 @@ func (t *UserPlan) Ptrs() []interface{} {
 		&t.ID,
 		&t.UserID,
 		&t.PlanID,
-		&t.Canceled,
-		&t.Finished,
 		&t.CreatedAt,
 		&t.UpdatedAt,
 	}

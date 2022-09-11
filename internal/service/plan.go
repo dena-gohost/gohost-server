@@ -179,5 +179,11 @@ func Match(ctx context.Context, txn *sql.Tx) error {
 		return err
 	}
 
+	for _, plan := range userPlans {
+		if err := daocore.DeleteOneEntryByUserID(ctx, txn, &plan.UserID); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

@@ -29,7 +29,6 @@ CREATE TABLE entries (
     spot_id CHAR(36) NOT NULL REFERENCES spots(spot_id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-    UNIQUE (user_id, date),
-    INDEX (user_id),
+    UNIQUE (user_id),
     INDEX (date, spot_id, university_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
