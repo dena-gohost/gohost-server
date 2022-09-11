@@ -637,10 +637,10 @@
             {
               "name": "id",
               "datatype": {
-                "type": "char",
-                "prec": 36
+                "type": "int"
               },
-              "is_primary": true
+              "is_primary": true,
+              "is_sequence": true
             },
             {
               "name": "user_id",
@@ -689,10 +689,10 @@
             {
               "name": "id",
               "datatype": {
-                "type": "char",
-                "prec": 36
+                "type": "int"
               },
-              "is_primary": true
+              "is_primary": true,
+              "is_sequence": true
             }
           ],
           "indexes": [
@@ -727,17 +727,16 @@
                 {
                   "name": "id",
                   "datatype": {
-                    "type": "char",
-                    "prec": 36
+                    "type": "int"
                   },
-                  "is_primary": true
+                  "is_primary": true,
+                  "is_sequence": true
                 }
               ],
               "is_unique": true,
               "is_primary": true
             }
-          ],
-          "manual": true
+          ]
         },
         {
           "type": "table",

@@ -120,7 +120,6 @@ func Match(ctx context.Context, txn *sql.Tx) error {
 		})
 		for _, userID := range userIDs {
 			userPlans = append(userPlans, &daocore.UserPlan{
-				ID:     uuid.NewString(),
 				UserID: userID,
 				PlanID: id,
 			})
