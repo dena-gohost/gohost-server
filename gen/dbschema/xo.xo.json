@@ -639,20 +639,6 @@
               }
             },
             {
-              "name": "canceled",
-              "datatype": {
-                "type": "timestamp",
-                "nullable": true
-              }
-            },
-            {
-              "name": "finished",
-              "datatype": {
-                "type": "timestamp",
-                "nullable": true
-              }
-            },
-            {
               "name": "created_at",
               "datatype": {
                 "type": "timestamp"
