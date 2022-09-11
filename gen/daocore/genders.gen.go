@@ -5,7 +5,6 @@ import (
     "context"
     "database/sql"
     "strings"
-    "time"
 
     "github.com/Masterminds/squirrel"
     "github.com/dena-gohost/gohost-server/pkg/dberror"
