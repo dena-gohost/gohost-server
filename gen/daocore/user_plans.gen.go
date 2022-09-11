@@ -16,6 +16,7 @@ const UserPlanTableName = "user_plans"
 
 var UserPlanAllColumns = []string{
 	"id",
+	"user_id",
 	"plan_id",
 	"canceled",
 	"finished",
@@ -25,6 +26,7 @@ var UserPlanAllColumns = []string{
 
 var UserPlanColumnsWOMagics = []string{
 	"id",
+	"user_id",
 	"plan_id",
 	"canceled",
 	"finished",
@@ -36,6 +38,7 @@ var UserPlanPrimaryKeyColumns = []string{
 
 type UserPlan struct {
 	ID        string
+	UserID    string
 	PlanID    string
 	Canceled  *time.Time
 	Finished  *time.Time
@@ -46,6 +49,7 @@ type UserPlan struct {
 func (t *UserPlan) Values() []interface{} {
 	return []interface{}{
 		t.ID,
+		t.UserID,
 		t.PlanID,
 		t.Canceled,
 		t.Finished,
@@ -55,6 +59,7 @@ func (t *UserPlan) Values() []interface{} {
 func (t *UserPlan) SetMap() map[string]interface{} {
 	return map[string]interface{}{
 		"id":       t.ID,
+		"user_id":  t.UserID,
 		"plan_id":  t.PlanID,
 		"canceled": t.Canceled,
 		"finished": t.Finished,
@@ -64,6 +69,7 @@ func (t *UserPlan) SetMap() map[string]interface{} {
 func (t *UserPlan) Ptrs() []interface{} {
 	return []interface{}{
 		&t.ID,
+		&t.UserID,
 		&t.PlanID,
 		&t.Canceled,
 		&t.Finished,
@@ -138,6 +144,26 @@ func SelectUserPlanByPlanID(ctx context.Context, txn *sql.Tx, plan_id *string) (
 		res = append(res, &t)
 	}
 	return res, nil
+}
+
+func SelectOneUserPlanByUserID(ctx context.Context, txn *sql.Tx, user_id *string) (UserPlan, error) {
+	eq := squirrel.Eq{}
+	if user_id != nil {
+		eq["user_id"] = *user_id
+	}
+	query, params, err := squirrel.
+		Select(UserPlanAllColumns...).
+		From(UserPlanTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return UserPlan{}, dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return UserPlan{}, dberror.MapError(err)
+	}
+	return IterateUserPlan(stmt.QueryRowContext(ctx, params...))
 }
 
 func SelectOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *string) (UserPlan, error) {
@@ -233,6 +259,29 @@ func DeleteUserPlanByPlanID(ctx context.Context, txn *sql.Tx, plan_id *string) e
 	eq := squirrel.Eq{}
 	if plan_id != nil {
 		eq["plan_id"] = *plan_id
+	}
+
+	query, params, err := squirrel.
+		Delete(UserPlanTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
+}
+
+func DeleteOneUserPlanByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
+	eq := squirrel.Eq{}
+	if user_id != nil {
+		eq["user_id"] = *user_id
 	}
 
 	query, params, err := squirrel.
