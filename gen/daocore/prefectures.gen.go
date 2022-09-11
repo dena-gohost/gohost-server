@@ -11,60 +11,60 @@ import (
     "github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
-const GenderTableName = "genders"
+const PrefectureTableName = "prefectures"
 
-var GenderAllColumns = []string{
+var PrefectureAllColumns = []string{
     "id",
     "name",
 }
 
-var GenderColumnsWOMagics = []string{
+var PrefectureColumnsWOMagics = []string{
     "id",
     "name",
 }
 
-var GenderPrimaryKeyColumns = []string{
+var PrefecturePrimaryKeyColumns = []string{
     "id",
 }
 
-type Gender struct {
+type Prefecture struct {
     ID string
     Name string
 }
 
-func (t *Gender) Values() []interface{} {
+func (t *Prefecture) Values() []interface{} {
     return []interface{}{
         t.ID,
         t.Name,
     }
 }
 
-func (t *Gender) SetMap() map[string]interface{} {
+func (t *Prefecture) SetMap() map[string]interface{} {
     return map[string]interface{}{
         "id": t.ID,
         "name": t.Name,
     }
 }
 
-func (t *Gender) Ptrs() []interface{} {
+func (t *Prefecture) Ptrs() []interface{} {
     return []interface{}{
         &t.ID,
         &t.Name,
     }
 }
 
-func IterateGender(sc interface{ Scan(...interface{}) error}) (Gender, error) {
-    t := Gender{}
+func IteratePrefecture(sc interface{ Scan(...interface{}) error}) (Prefecture, error) {
+    t := Prefecture{}
     if err := sc.Scan(t.Ptrs()...); err != nil {
-        return Gender{}, dberror.MapError(err)
+        return Prefecture{}, dberror.MapError(err)
     }
     return t, nil
 }
 
-func SelectAllGender(ctx context.Context, txn *sql.Tx) ([]*Gender, error) {
+func SelectAllPrefecture(ctx context.Context, txn *sql.Tx) ([]*Prefecture, error) {
     query, params, err := squirrel.
-        Select(GenderAllColumns...).
-        From(GenderTableName).
+        Select(PrefectureAllColumns...).
+        From(PrefectureTableName).
         ToSql()
     if err != nil {
         return nil, dberror.MapError(err)
@@ -78,9 +78,9 @@ func SelectAllGender(ctx context.Context, txn *sql.Tx) ([]*Gender, error) {
     if err != nil {
         return nil, dberror.MapError(err)
     }
-    res := make([]*Gender, 0)
+    res := make([]*Prefecture, 0)
     for rows.Next() {
-        t, err := IterateGender(rows)
+        t, err := IteratePrefecture(rows)
         if err != nil {
             return nil, dberror.MapError(err)
         }
@@ -89,49 +89,29 @@ func SelectAllGender(ctx context.Context, txn *sql.Tx) ([]*Gender, error) {
     return res, nil
 }
 
-func SelectOneGenderByName(ctx context.Context, txn *sql.Tx, name *string) (Gender, error) {
-    eq := squirrel.Eq{}
-    if name != nil {
-        eq["name"] = *name
-    }
-    query, params, err := squirrel.
-        Select(GenderAllColumns...).
-        From(GenderTableName).
-        Where(eq).
-        ToSql()
-    if err != nil {
-        return Gender{}, dberror.MapError(err)
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return Gender{}, dberror.MapError(err)
-    }
-    return IterateGender(stmt.QueryRowContext(ctx, params...))
-}
-
-func SelectOneGenderByID(ctx context.Context, txn *sql.Tx, id *string) (Gender, error) {
+func SelectOnePrefectureByID(ctx context.Context, txn *sql.Tx, id *string) (Prefecture, error) {
     eq := squirrel.Eq{}
     if id != nil {
         eq["id"] = *id
     }
     query, params, err := squirrel.
-        Select(GenderAllColumns...).
-        From(GenderTableName).
+        Select(PrefectureAllColumns...).
+        From(PrefectureTableName).
         Where(eq).
         ToSql()
     if err != nil {
-        return Gender{}, dberror.MapError(err)
+        return Prefecture{}, dberror.MapError(err)
     }
     stmt, err := txn.PrepareContext(ctx, query)
     if err != nil {
-        return Gender{}, dberror.MapError(err)
+        return Prefecture{}, dberror.MapError(err)
     }
-    return IterateGender(stmt.QueryRowContext(ctx, params...))
+    return IteratePrefecture(stmt.QueryRowContext(ctx, params...))
 }
 
 
 
-func InsertGender(ctx context.Context, txn *sql.Tx, records []*Gender) error {
+func InsertPrefecture(ctx context.Context, txn *sql.Tx, records []*Prefecture) error {
     for i := range records {
         if records[i] == nil {
             records = append(records[:i], records[i+1:]...)
@@ -140,7 +120,7 @@ func InsertGender(ctx context.Context, txn *sql.Tx, records []*Gender) error {
     if len(records) == 0 {
         return nil
     }
-    sq := squirrel.Insert(GenderTableName).Columns(GenderColumnsWOMagics...)
+    sq := squirrel.Insert(PrefectureTableName).Columns(PrefectureColumnsWOMagics...)
     for _, r := range records {
         if r == nil {
             continue
@@ -161,8 +141,8 @@ func InsertGender(ctx context.Context, txn *sql.Tx, records []*Gender) error {
     return nil
 }
 
-func UpdateGender(ctx context.Context, txn *sql.Tx, record Gender) error {
-    sql, params, err := squirrel.Update(GenderTableName).SetMap(record.SetMap()).
+func UpdatePrefecture(ctx context.Context, txn *sql.Tx, record Prefecture) error {
+    sql, params, err := squirrel.Update(PrefectureTableName).SetMap(record.SetMap()).
         Where(squirrel.Eq{
         "id": record.ID,
     }).
@@ -180,13 +160,13 @@ func UpdateGender(ctx context.Context, txn *sql.Tx, record Gender) error {
     return nil
 }
 
-func UpsertGender(ctx context.Context, txn *sql.Tx, record Gender) error {
-    updateSQL, params, err := squirrel.Update(GenderTableName).SetMap(record.SetMap()).ToSql()
+func UpsertPrefecture(ctx context.Context, txn *sql.Tx, record Prefecture) error {
+    updateSQL, params, err := squirrel.Update(PrefectureTableName).SetMap(record.SetMap()).ToSql()
     if err != nil {
         return err
     }
-    updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+GenderTableName+" SET ")
-    query, params, err := squirrel.Insert(GenderTableName).Columns(GenderColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+    updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+PrefectureTableName+" SET ")
+    query, params, err := squirrel.Insert(PrefectureTableName).Columns(PrefectureColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
     if err != nil {
         return err
     }
@@ -200,37 +180,14 @@ func UpsertGender(ctx context.Context, txn *sql.Tx, record Gender) error {
     return nil
 }
 
-func DeleteOneGenderByName(ctx context.Context, txn *sql.Tx, name *string) error {
-    eq := squirrel.Eq{}
-    if name != nil {
-        eq["name"] = *name
-    }
-
-    query, params, err := squirrel.
-        Delete(GenderTableName).
-        Where(eq).
-        ToSql()
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    if _, err = stmt.Exec(params...); err != nil {
-        return dberror.MapError(err)
-    }
-    return nil
-}
-
-func DeleteOneGenderByID(ctx context.Context, txn *sql.Tx, id *string) error {
+func DeleteOnePrefectureByID(ctx context.Context, txn *sql.Tx, id *string) error {
     eq := squirrel.Eq{}
     if id != nil {
         eq["id"] = *id
     }
 
     query, params, err := squirrel.
-        Delete(GenderTableName).
+        Delete(PrefectureTableName).
         Where(eq).
         ToSql()
     if err != nil {

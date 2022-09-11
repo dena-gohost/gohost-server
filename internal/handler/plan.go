@@ -1,25 +1,33 @@
 package handler
 
 import (
+	"context"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/dena-gohost/gohost-server/gen/api"
+	"github.com/dena-gohost/gohost-server/internal/handler/middleware"
 	"github.com/dena-gohost/gohost-server/internal/handler/mock"
+	"github.com/dena-gohost/gohost-server/internal/service"
+	"github.com/dena-gohost/gohost-server/pkg/echoutil"
 )
 
 func (s *Server) GetPlan(ec echo.Context) error {
-	mh := time.Date(2022, 9, 11, 17, 0, 0, 0, time.Local)
-	ms := "渋谷駅"
-	ret := &api.GetPlanResponse{
-		MeetingHour:    &mh,
-		MeetingStation: &ms,
-		Spot:           mock.Spots[0],
-		Users:          &mock.Users,
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	txn, err := s.db.Begin()
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
 	}
-	return ec.JSON(http.StatusOK, ret)
+	defer txn.Rollback()
+	user, err := middleware.GetUserFromSession(ec)
+	plan, err := service.GetPlan(ctx, txn, user)
+	if err != nil {
+		return echoutil.ErrInternal(ec, err)
+	}
+	return ec.JSON(http.StatusOK, plan)
 }
 
 func (s *Server) PostPlanCancel(ec echo.Context) error {
