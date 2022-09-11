@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
@@ -85,13 +86,7 @@ func PostPlanCancel(
 	txn *sql.Tx,
 	user *daocore.User,
 ) error {
-	userPlan, err := daocore.SelectOneUserPlanByUserID(ctx, txn, &user.ID)
-	if err != nil {
-		return err
-	}
-	now := time.Now()
-	userPlan.Canceled = &now
-	return daocore.UpdateUserPlan(ctx, txn, userPlan)
+	return daocore.DeleteOneUserPlanByUserID(ctx, txn, &user.ID)
 }
 
 func GetPlanUsers(ctx context.Context,
@@ -122,6 +117,31 @@ func GetPlanUsers(ctx context.Context,
 		})
 	}
 	return &users, nil
+}
+
+func PostPlanFinish(ctx context.Context, txn *sql.Tx,
+	user *daocore.User, updateInfo *api.PostFinishPlanRequestBody) error {
+	fmt.Println(user.ID)
+	err := daocore.DeleteOneUserPlanByUserID(ctx, txn, &user.ID)
+	if err != nil {
+		return err
+	}
+	for _, info := range *updateInfo {
+		updateLikeUser, err := daocore.SelectOneUserByID(ctx, txn, info.UserId)
+		if err != nil {
+			return err
+		}
+		if *info.Like {
+			updateLikeUser.Good += 1
+		} else {
+			updateLikeUser.Bad += 1
+		}
+		err = daocore.UpdateUser(ctx, txn, updateLikeUser)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 const minMatchNum = 3
