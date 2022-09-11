@@ -103,27 +103,9 @@
                     "type": "char",
                     "prec": 36
                   }
-                },
-                {
-                  "name": "date",
-                  "datatype": {
-                    "type": "date"
-                  }
                 }
               ],
               "is_unique": true
-            },
-            {
-              "name": "user_id_2",
-              "fields": [
-                {
-                  "name": "user_id",
-                  "datatype": {
-                    "type": "char",
-                    "prec": 36
-                  }
-                }
-              ]
             },
             {
               "name": "entries_id_pkey",
