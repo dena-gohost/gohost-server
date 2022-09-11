@@ -3,8 +3,9 @@ package worker
 import (
 	"context"
 	"database/sql"
-	"github.com/dena-gohost/gohost-server/pkg/logger"
 	"time"
+
+	"github.com/dena-gohost/gohost-server/pkg/logger"
 
 	"github.com/dena-gohost/gohost-server/internal/service"
 )

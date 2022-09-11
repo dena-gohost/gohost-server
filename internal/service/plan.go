@@ -6,9 +6,10 @@ import (
 	"time"
 
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
+	"github.com/google/uuid"
+
 	"github.com/dena-gohost/gohost-server/gen/api"
 	"github.com/dena-gohost/gohost-server/gen/daocore"
-	"github.com/google/uuid"
 )
 
 func daterev(t time.Time) *openapi_types.Date {

@@ -2,203 +2,201 @@
 package daocore
 
 import (
-    "context"
-    "database/sql"
-    "strings"
+	"context"
+	"database/sql"
+	"strings"
 
-    "github.com/Masterminds/squirrel"
-    "github.com/dena-gohost/gohost-server/pkg/dberror"
+	"github.com/Masterminds/squirrel"
+
+	"github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
 const PrefectureTableName = "prefectures"
 
 var PrefectureAllColumns = []string{
-    "id",
-    "name",
+	"id",
+	"name",
 }
 
 var PrefectureColumnsWOMagics = []string{
-    "id",
-    "name",
+	"id",
+	"name",
 }
 
 var PrefecturePrimaryKeyColumns = []string{
-    "id",
+	"id",
 }
 
 type Prefecture struct {
-    ID string
-    Name string
+	ID   string
+	Name string
 }
 
 func (t *Prefecture) Values() []interface{} {
-    return []interface{}{
-        t.ID,
-        t.Name,
-    }
+	return []interface{}{
+		t.ID,
+		t.Name,
+	}
 }
 
 func (t *Prefecture) SetMap() map[string]interface{} {
-    return map[string]interface{}{
-        "id": t.ID,
-        "name": t.Name,
-    }
+	return map[string]interface{}{
+		"id":   t.ID,
+		"name": t.Name,
+	}
 }
 
 func (t *Prefecture) Ptrs() []interface{} {
-    return []interface{}{
-        &t.ID,
-        &t.Name,
-    }
+	return []interface{}{
+		&t.ID,
+		&t.Name,
+	}
 }
 
-func IteratePrefecture(sc interface{ Scan(...interface{}) error}) (Prefecture, error) {
-    t := Prefecture{}
-    if err := sc.Scan(t.Ptrs()...); err != nil {
-        return Prefecture{}, dberror.MapError(err)
-    }
-    return t, nil
+func IteratePrefecture(sc interface{ Scan(...interface{}) error }) (Prefecture, error) {
+	t := Prefecture{}
+	if err := sc.Scan(t.Ptrs()...); err != nil {
+		return Prefecture{}, dberror.MapError(err)
+	}
+	return t, nil
 }
 
 func SelectAllPrefecture(ctx context.Context, txn *sql.Tx) ([]*Prefecture, error) {
-    query, params, err := squirrel.
-        Select(PrefectureAllColumns...).
-        From(PrefectureTableName).
-        ToSql()
-    if err != nil {
-        return nil, dberror.MapError(err)
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return nil, dberror.MapError(err)
-    }
+	query, params, err := squirrel.
+		Select(PrefectureAllColumns...).
+		From(PrefectureTableName).
+		ToSql()
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
 
-    rows, err := stmt.QueryContext(ctx, params...)
-    if err != nil {
-        return nil, dberror.MapError(err)
-    }
-    res := make([]*Prefecture, 0)
-    for rows.Next() {
-        t, err := IteratePrefecture(rows)
-        if err != nil {
-            return nil, dberror.MapError(err)
-        }
-        res = append(res, &t)
-    }
-    return res, nil
+	rows, err := stmt.QueryContext(ctx, params...)
+	if err != nil {
+		return nil, dberror.MapError(err)
+	}
+	res := make([]*Prefecture, 0)
+	for rows.Next() {
+		t, err := IteratePrefecture(rows)
+		if err != nil {
+			return nil, dberror.MapError(err)
+		}
+		res = append(res, &t)
+	}
+	return res, nil
 }
 
 func SelectOnePrefectureByID(ctx context.Context, txn *sql.Tx, id *string) (Prefecture, error) {
-    eq := squirrel.Eq{}
-    if id != nil {
-        eq["id"] = *id
-    }
-    query, params, err := squirrel.
-        Select(PrefectureAllColumns...).
-        From(PrefectureTableName).
-        Where(eq).
-        ToSql()
-    if err != nil {
-        return Prefecture{}, dberror.MapError(err)
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return Prefecture{}, dberror.MapError(err)
-    }
-    return IteratePrefecture(stmt.QueryRowContext(ctx, params...))
+	eq := squirrel.Eq{}
+	if id != nil {
+		eq["id"] = *id
+	}
+	query, params, err := squirrel.
+		Select(PrefectureAllColumns...).
+		From(PrefectureTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return Prefecture{}, dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return Prefecture{}, dberror.MapError(err)
+	}
+	return IteratePrefecture(stmt.QueryRowContext(ctx, params...))
 }
 
-
-
 func InsertPrefecture(ctx context.Context, txn *sql.Tx, records []*Prefecture) error {
-    for i := range records {
-        if records[i] == nil {
-            records = append(records[:i], records[i+1:]...)
-        }
-    }
-    if len(records) == 0 {
-        return nil
-    }
-    sq := squirrel.Insert(PrefectureTableName).Columns(PrefectureColumnsWOMagics...)
-    for _, r := range records {
-        if r == nil {
-            continue
-        }
-        sq = sq.Values(r.Values()...)
-    }
-    query, params, err := sq.ToSql()
-    if err != nil {
-        return err
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    if _, err = stmt.Exec(params...); err != nil {
-        return dberror.MapError(err)
-    }
-    return nil
+	for i := range records {
+		if records[i] == nil {
+			records = append(records[:i], records[i+1:]...)
+		}
+	}
+	if len(records) == 0 {
+		return nil
+	}
+	sq := squirrel.Insert(PrefectureTableName).Columns(PrefectureColumnsWOMagics...)
+	for _, r := range records {
+		if r == nil {
+			continue
+		}
+		sq = sq.Values(r.Values()...)
+	}
+	query, params, err := sq.ToSql()
+	if err != nil {
+		return err
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
 }
 
 func UpdatePrefecture(ctx context.Context, txn *sql.Tx, record Prefecture) error {
-    sql, params, err := squirrel.Update(PrefectureTableName).SetMap(record.SetMap()).
-        Where(squirrel.Eq{
-        "id": record.ID,
-    }).
-        ToSql()
-    if err != nil {
-        return err
-    }
-    stmt, err := txn.PrepareContext(ctx, sql)
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    if _, err = stmt.Exec(params...); err != nil {
-        return dberror.MapError(err)
-    }
-    return nil
+	sql, params, err := squirrel.Update(PrefectureTableName).SetMap(record.SetMap()).
+		Where(squirrel.Eq{
+			"id": record.ID,
+		}).
+		ToSql()
+	if err != nil {
+		return err
+	}
+	stmt, err := txn.PrepareContext(ctx, sql)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
 }
 
 func UpsertPrefecture(ctx context.Context, txn *sql.Tx, record Prefecture) error {
-    updateSQL, params, err := squirrel.Update(PrefectureTableName).SetMap(record.SetMap()).ToSql()
-    if err != nil {
-        return err
-    }
-    updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+PrefectureTableName+" SET ")
-    query, params, err := squirrel.Insert(PrefectureTableName).Columns(PrefectureColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
-    if err != nil {
-        return err
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    if _, err = stmt.Exec(params...); err != nil {
-        return dberror.MapError(err)
-    }
-    return nil
+	updateSQL, params, err := squirrel.Update(PrefectureTableName).SetMap(record.SetMap()).ToSql()
+	if err != nil {
+		return err
+	}
+	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+PrefectureTableName+" SET ")
+	query, params, err := squirrel.Insert(PrefectureTableName).Columns(PrefectureColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+	if err != nil {
+		return err
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
 }
 
 func DeleteOnePrefectureByID(ctx context.Context, txn *sql.Tx, id *string) error {
-    eq := squirrel.Eq{}
-    if id != nil {
-        eq["id"] = *id
-    }
+	eq := squirrel.Eq{}
+	if id != nil {
+		eq["id"] = *id
+	}
 
-    query, params, err := squirrel.
-        Delete(PrefectureTableName).
-        Where(eq).
-        ToSql()
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    stmt, err := txn.PrepareContext(ctx, query)
-    if err != nil {
-        return dberror.MapError(err)
-    }
-    if _, err = stmt.Exec(params...); err != nil {
-        return dberror.MapError(err)
-    }
-    return nil
+	query, params, err := squirrel.
+		Delete(PrefectureTableName).
+		Where(eq).
+		ToSql()
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	stmt, err := txn.PrepareContext(ctx, query)
+	if err != nil {
+		return dberror.MapError(err)
+	}
+	if _, err = stmt.Exec(params...); err != nil {
+		return dberror.MapError(err)
+	}
+	return nil
 }
-
