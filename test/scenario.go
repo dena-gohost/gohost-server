@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +16,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/dena-gohost/gohost-server/gen/api"
+	environment "github.com/dena-gohost/gohost-server/internal/env"
+	"github.com/dena-gohost/gohost-server/internal/service"
 )
 
 const (
@@ -22,6 +26,7 @@ const (
 	spotsURL     = "http://localhost:5050/spots?date=2022-09-10&limit=3"
 	spotURL      = "http://localhost:5050/spots/%s"
 	spotEntryURL = "http://localhost:5050/spots/%s/entry"
+	planURL      = "http://localhost:5050/plan"
 )
 
 var (
@@ -52,6 +57,19 @@ var (
 			IconUrl:      strev("https://cdn-ak.f.st-hatena.com/images/fotolife/c/color-hiyoko/20190924/20190924145352.jpg"),
 			InstagramId:  strev("yummy"),
 		},
+		{
+			FirstName:    strev("ハッカソン"),
+			LastName:     strev("dena"),
+			UserName:     strev("hackathon"),
+			Email:        strev("dena@hackathon.ac.jp"),
+			Password:     strev("passw0rd"),
+			UniversityId: strev("06faba8c-5d9f-495c-a9d7-3bc82a040398"),
+			BirthDate:    daterev(time.Date(2001, 9, 12, 0, 0, 0, 0, time.Local)),
+			Year:         intrev(3),
+			GenderId:     strev("3"),
+			IconUrl:      strev("http://df.iwatobi-sc.com/img/story/09_still_01.jpg"),
+			InstagramId:  strev("dummy_insta"),
+		},
 	}
 	date = api.PostSpotsSpotIdEntryJSONRequestBody{
 		Date: &openapi_types.Date{
@@ -74,6 +92,12 @@ func intrev(i int) *int {
 
 func main() {
 
+	cookies := make([]string, 0)
+	env, err := environment.Process()
+	if err != nil {
+		panic(err)
+	}
+
 	for _, user := range users {
 		// ユーザー登録
 		payload, err := json.Marshal(user)
@@ -93,6 +117,7 @@ func main() {
 		}
 
 		cookie := fss[1]
+		cookies = append(cookies, cookie)
 
 		// おすすめ心霊スポット
 		ba := get(spotsURL, cookie)
@@ -118,6 +143,27 @@ func main() {
 		}
 
 		_, _ = post(payload, fmt.Sprintf(spotEntryURL, *spotID), &cookie)
+	}
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", env.DBUser, env.DBPass, env.DBHost, env.DBPort, env.DBName))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	txn, err := db.Begin()
+	defer txn.Rollback()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := service.Match(ctx, txn); err != nil {
+		panic(err)
+	}
+
+	if err := txn.Commit(); err != nil {
+		panic(err)
+	}
+
+	for i, _ := range users {
+		_ = get(planURL, cookies[i])
 	}
 }
 

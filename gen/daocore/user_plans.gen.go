@@ -37,7 +37,7 @@ var UserPlanPrimaryKeyColumns = []string{
 }
 
 type UserPlan struct {
-	ID        string
+	ID        int
 	UserID    string
 	PlanID    string
 	Canceled  *time.Time
@@ -166,7 +166,7 @@ func SelectOneUserPlanByUserID(ctx context.Context, txn *sql.Tx, user_id *string
 	return IterateUserPlan(stmt.QueryRowContext(ctx, params...))
 }
 
-func SelectOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *string) (UserPlan, error) {
+func SelectOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *int) (UserPlan, error) {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
@@ -301,7 +301,7 @@ func DeleteOneUserPlanByUserID(ctx context.Context, txn *sql.Tx, user_id *string
 	return nil
 }
 
-func DeleteOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *string) error {
+func DeleteOneUserPlanByID(ctx context.Context, txn *sql.Tx, id *int) error {
 	eq := squirrel.Eq{}
 	if id != nil {
 		eq["id"] = *id
