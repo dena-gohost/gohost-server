@@ -152,13 +152,10 @@ func SelectEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx,
 	return res, nil
 }
 
-func SelectOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *string, date **time.Time) (Entry, error) {
+func SelectOneEntryByUserID(ctx context.Context, txn *sql.Tx, user_id *string) (Entry, error) {
 	eq := squirrel.Eq{}
 	if user_id != nil {
 		eq["user_id"] = *user_id
-	}
-	if date != nil {
-		eq["date"] = *date
 	}
 	query, params, err := squirrel.
 		Select(EntryAllColumns...).
@@ -173,38 +170,6 @@ func SelectOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *st
 		return Entry{}, dberror.MapError(err)
 	}
 	return IterateEntry(stmt.QueryRowContext(ctx, params...))
-}
-
-func SelectEntryByUserID(ctx context.Context, txn *sql.Tx, user_id *string) ([]*Entry, error) {
-	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
-	}
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Entry, 0)
-	for rows.Next() {
-		t, err := IterateEntry(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
 }
 
 func SelectOneEntryByID(ctx context.Context, txn *sql.Tx, id *string) (Entry, error) {
@@ -325,33 +290,7 @@ func DeleteEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx,
 	return nil
 }
 
-func DeleteOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *string, date **time.Time) error {
-	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
-	}
-	if date != nil {
-		eq["date"] = *date
-	}
-
-	query, params, err := squirrel.
-		Delete(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
-}
-
-func DeleteEntryByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
+func DeleteOneEntryByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
 	eq := squirrel.Eq{}
 	if user_id != nil {
 		eq["user_id"] = *user_id
