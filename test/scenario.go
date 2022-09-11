@@ -21,20 +21,13 @@ import (
 )
 
 const (
-	registerURL   = "http://localhost:5050/register"
-	loginURL      = "http://localhost:5050/login"
-	spotsURL      = "http://localhost:5050/spots?date=2022-09-10&limit=3"
-	spotURL       = "http://localhost:5050/spots/%s"
-	spotEntryURL  = "http://localhost:5050/spots/%s/entry"
-	planURL       = "http://localhost:5050/plan"
-	planCancelURL = "http://localhost:5050/plan/cancel"
-	planFinishURL = "http://localhost:5050/plan/finish"
+	registerURL  = "http://localhost:5050/register"
+	loginURL     = "http://localhost:5050/login"
+	spotsURL     = "http://localhost:5050/spots?date=2022-09-10&limit=3"
+	spotURL      = "http://localhost:5050/spots/%s"
+	spotEntryURL = "http://localhost:5050/spots/%s/entry"
+	planURL      = "http://localhost:5050/plan"
 )
-
-type PlanFinishInfo = struct {
-	Like   *bool   `json:"like,omitempty"`
-	UserId *string `json:"user_id,omitempty"`
-}
 
 var (
 	users = []api.User{
@@ -172,7 +165,6 @@ func main() {
 	for i, _ := range users {
 		_ = get(planURL, cookies[i])
 	}
-
 }
 
 func post(payload []byte, url string, cookie *string) ([]byte, *http.Response) {

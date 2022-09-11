@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
@@ -79,69 +78,6 @@ func GetPlan(
 		},
 		Users: &users,
 	}, err
-}
-
-func PostPlanCancel(
-	ctx context.Context,
-	txn *sql.Tx,
-	user *daocore.User,
-) error {
-	return daocore.DeleteOneUserPlanByUserID(ctx, txn, &user.ID)
-}
-
-func GetPlanUsers(ctx context.Context,
-	txn *sql.Tx,
-	user *daocore.User) (*[]api.User, error) {
-	userPlan, err := daocore.SelectOneUserPlanByUserID(ctx, txn, &user.ID)
-	if err != nil {
-		return nil, err
-	}
-	userPlans, err := daocore.SelectUserPlanByPlanID(ctx, txn, &userPlan.PlanID)
-	users := make([]api.User, 0)
-	for _, up := range userPlans {
-		tmpUser, err := daocore.SelectOneUserByID(ctx, txn, &up.UserID)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, api.User{
-			BirthDate:    daterev(*user.BirthDate),
-			Email:        &tmpUser.Email,
-			FirstName:    &tmpUser.FirstName,
-			GenderId:     &tmpUser.GenderID,
-			IconUrl:      &tmpUser.IconUrl,
-			Id:           &tmpUser.ID,
-			LastName:     &tmpUser.LastName,
-			UniversityId: &tmpUser.UniversityID,
-			UserName:     &tmpUser.UserName,
-			Year:         &tmpUser.Year,
-		})
-	}
-	return &users, nil
-}
-
-func PostPlanFinish(ctx context.Context, txn *sql.Tx,
-	user *daocore.User, updateInfo *api.PostFinishPlanRequestBody) error {
-	fmt.Println(user.ID)
-	err := daocore.DeleteOneUserPlanByUserID(ctx, txn, &user.ID)
-	if err != nil {
-		return err
-	}
-	for _, info := range *updateInfo {
-		updateLikeUser, err := daocore.SelectOneUserByID(ctx, txn, info.UserId)
-		if err != nil {
-			return err
-		}
-		if *info.Like {
-			updateLikeUser.Good += 1
-		} else {
-			updateLikeUser.Bad += 1
-		}
-		err = daocore.UpdateUser(ctx, txn, updateLikeUser)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 const minMatchNum = 3
