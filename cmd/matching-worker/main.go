@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	"github.com/dena-gohost/gohost-server/pkg/logger"
@@ -35,8 +37,33 @@ func run() error {
 		return err
 	}
 
+	errs := make(chan error, 1)
+	go func() {
+		errs <- startHealthCheck(env.Port)
+	}()
+	if err := <-errs; err != nil {
+		return err
+	}
+
 	w := worker.NewMatchingWorker(&l, db)
 	w.Run()
 
 	return nil
+}
+
+func startHealthCheck(port int) error {
+	http.Handle("/healthcheck", http.HandlerFunc(healthCheckHandler))
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	io.WriteString(w, `{"status": ok}`)
 }
