@@ -643,6 +643,13 @@
               "is_primary": true
             },
             {
+              "name": "user_id",
+              "datatype": {
+                "type": "char",
+                "prec": 36
+              }
+            },
+            {
               "name": "plan_id",
               "datatype": {
                 "type": "char",
@@ -700,6 +707,19 @@
                   }
                 }
               ]
+            },
+            {
+              "name": "user_id",
+              "fields": [
+                {
+                  "name": "user_id",
+                  "datatype": {
+                    "type": "char",
+                    "prec": 36
+                  }
+                }
+              ],
+              "is_unique": true
             },
             {
               "name": "user_plans_id_pkey",

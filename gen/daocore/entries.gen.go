@@ -2,397 +2,399 @@
 package daocore
 
 import (
-	"context"
-	"database/sql"
-	"strings"
-	"time"
+    "context"
+    "database/sql"
+    "strings"
+    "time"
 
-	"github.com/Masterminds/squirrel"
-
-	"github.com/dena-gohost/gohost-server/pkg/dberror"
+    "github.com/Masterminds/squirrel"
+    "github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
 const EntryTableName = "entries"
 
 var EntryAllColumns = []string{
-	"id",
-	"user_id",
-	"university_id",
-	"date",
-	"spot_id",
-	"created_at",
-	"updated_at",
+    "id",
+    "user_id",
+    "university_id",
+    "date",
+    "spot_id",
+    "created_at",
+    "updated_at",
 }
 
 var EntryColumnsWOMagics = []string{
-	"id",
-	"user_id",
-	"university_id",
-	"date",
-	"spot_id",
+    "id",
+    "user_id",
+    "university_id",
+    "date",
+    "spot_id",
 }
 
 var EntryPrimaryKeyColumns = []string{
-	"id",
+    "id",
 }
 
 type Entry struct {
-	ID           string
-	UserID       string
-	UniversityID string
-	Date         *time.Time
-	SpotID       string
-	CreatedAt    *time.Time
-	UpdatedAt    *time.Time
+    ID string
+    UserID string
+    UniversityID string
+    Date *time.Time
+    SpotID string
+    CreatedAt *time.Time
+    UpdatedAt *time.Time
 }
 
 func (t *Entry) Values() []interface{} {
-	return []interface{}{
-		t.ID,
-		t.UserID,
-		t.UniversityID,
-		t.Date,
-		t.SpotID,
-	}
+    return []interface{}{
+        t.ID,
+        t.UserID,
+        t.UniversityID,
+        t.Date,
+        t.SpotID,
+    }
 }
 
 func (t *Entry) SetMap() map[string]interface{} {
-	return map[string]interface{}{
-		"id":            t.ID,
-		"user_id":       t.UserID,
-		"university_id": t.UniversityID,
-		"date":          t.Date,
-		"spot_id":       t.SpotID,
-	}
+    return map[string]interface{}{
+        "id": t.ID,
+        "user_id": t.UserID,
+        "university_id": t.UniversityID,
+        "date": t.Date,
+        "spot_id": t.SpotID,
+    }
 }
 
 func (t *Entry) Ptrs() []interface{} {
-	return []interface{}{
-		&t.ID,
-		&t.UserID,
-		&t.UniversityID,
-		&t.Date,
-		&t.SpotID,
-		&t.CreatedAt,
-		&t.UpdatedAt,
-	}
+    return []interface{}{
+        &t.ID,
+        &t.UserID,
+        &t.UniversityID,
+        &t.Date,
+        &t.SpotID,
+        &t.CreatedAt,
+        &t.UpdatedAt,
+    }
 }
 
-func IterateEntry(sc interface{ Scan(...interface{}) error }) (Entry, error) {
-	t := Entry{}
-	if err := sc.Scan(t.Ptrs()...); err != nil {
-		return Entry{}, dberror.MapError(err)
-	}
-	return t, nil
+func IterateEntry(sc interface{ Scan(...interface{}) error}) (Entry, error) {
+    t := Entry{}
+    if err := sc.Scan(t.Ptrs()...); err != nil {
+        return Entry{}, dberror.MapError(err)
+    }
+    return t, nil
 }
 
 func SelectAllEntry(ctx context.Context, txn *sql.Tx) ([]*Entry, error) {
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
+    query, params, err := squirrel.
+        Select(EntryAllColumns...).
+        From(EntryTableName).
+        ToSql()
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
 
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Entry, 0)
-	for rows.Next() {
-		t, err := IterateEntry(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
+    rows, err := stmt.QueryContext(ctx, params...)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    res := make([]*Entry, 0)
+    for rows.Next() {
+        t, err := IterateEntry(rows)
+        if err != nil {
+            return nil, dberror.MapError(err)
+        }
+        res = append(res, &t)
+    }
+    return res, nil
 }
 
-func SelectEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx, date **time.Time, spot_id *string, university_id *string) ([]*Entry, error) {
-	eq := squirrel.Eq{}
-	if date != nil {
-		eq["date"] = *date
-	}
-	if spot_id != nil {
-		eq["spot_id"] = *spot_id
-	}
-	if university_id != nil {
-		eq["university_id"] = *university_id
-	}
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Entry, 0)
-	for rows.Next() {
-		t, err := IterateEntry(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
+func SelectEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx, date **time.Time,spot_id *string,university_id *string) ([]*Entry, error) {
+    eq := squirrel.Eq{}
+    if date != nil {
+        eq["date"] = *date
+    }
+    if spot_id != nil {
+        eq["spot_id"] = *spot_id
+    }
+    if university_id != nil {
+        eq["university_id"] = *university_id
+    }
+    query, params, err := squirrel.
+        Select(EntryAllColumns...).
+        From(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    rows, err := stmt.QueryContext(ctx, params...)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    res := make([]*Entry, 0)
+    for rows.Next() {
+        t, err := IterateEntry(rows)
+        if err != nil {
+            return nil, dberror.MapError(err)
+        }
+        res = append(res, &t)
+    }
+    return res, nil
 }
 
-func SelectOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *string, date **time.Time) (Entry, error) {
-	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
-	}
-	if date != nil {
-		eq["date"] = *date
-	}
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return Entry{}, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return Entry{}, dberror.MapError(err)
-	}
-	return IterateEntry(stmt.QueryRowContext(ctx, params...))
+func SelectOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *string,date **time.Time) (Entry, error) {
+    eq := squirrel.Eq{}
+    if user_id != nil {
+        eq["user_id"] = *user_id
+    }
+    if date != nil {
+        eq["date"] = *date
+    }
+    query, params, err := squirrel.
+        Select(EntryAllColumns...).
+        From(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return Entry{}, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return Entry{}, dberror.MapError(err)
+    }
+    return IterateEntry(stmt.QueryRowContext(ctx, params...))
 }
 
 func SelectEntryByUserID(ctx context.Context, txn *sql.Tx, user_id *string) ([]*Entry, error) {
-	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
-	}
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Entry, 0)
-	for rows.Next() {
-		t, err := IterateEntry(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
+    eq := squirrel.Eq{}
+    if user_id != nil {
+        eq["user_id"] = *user_id
+    }
+    query, params, err := squirrel.
+        Select(EntryAllColumns...).
+        From(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    rows, err := stmt.QueryContext(ctx, params...)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    res := make([]*Entry, 0)
+    for rows.Next() {
+        t, err := IterateEntry(rows)
+        if err != nil {
+            return nil, dberror.MapError(err)
+        }
+        res = append(res, &t)
+    }
+    return res, nil
 }
 
 func SelectOneEntryByID(ctx context.Context, txn *sql.Tx, id *string) (Entry, error) {
-	eq := squirrel.Eq{}
-	if id != nil {
-		eq["id"] = *id
-	}
-	query, params, err := squirrel.
-		Select(EntryAllColumns...).
-		From(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return Entry{}, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return Entry{}, dberror.MapError(err)
-	}
-	return IterateEntry(stmt.QueryRowContext(ctx, params...))
+    eq := squirrel.Eq{}
+    if id != nil {
+        eq["id"] = *id
+    }
+    query, params, err := squirrel.
+        Select(EntryAllColumns...).
+        From(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return Entry{}, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return Entry{}, dberror.MapError(err)
+    }
+    return IterateEntry(stmt.QueryRowContext(ctx, params...))
 }
 
+
+
 func InsertEntry(ctx context.Context, txn *sql.Tx, records []*Entry) error {
-	for i := range records {
-		if records[i] == nil {
-			records = append(records[:i], records[i+1:]...)
-		}
-	}
-	if len(records) == 0 {
-		return nil
-	}
-	sq := squirrel.Insert(EntryTableName).Columns(EntryColumnsWOMagics...)
-	for _, r := range records {
-		if r == nil {
-			continue
-		}
-		sq = sq.Values(r.Values()...)
-	}
-	query, params, err := sq.ToSql()
-	if err != nil {
-		return err
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    for i := range records {
+        if records[i] == nil {
+            records = append(records[:i], records[i+1:]...)
+        }
+    }
+    if len(records) == 0 {
+        return nil
+    }
+    sq := squirrel.Insert(EntryTableName).Columns(EntryColumnsWOMagics...)
+    for _, r := range records {
+        if r == nil {
+            continue
+        }
+        sq = sq.Values(r.Values()...)
+    }
+    query, params, err := sq.ToSql()
+    if err != nil {
+        return err
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func UpdateEntry(ctx context.Context, txn *sql.Tx, record Entry) error {
-	sql, params, err := squirrel.Update(EntryTableName).SetMap(record.SetMap()).
-		Where(squirrel.Eq{
-			"id": record.ID,
-		}).
-		ToSql()
-	if err != nil {
-		return err
-	}
-	stmt, err := txn.PrepareContext(ctx, sql)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    sql, params, err := squirrel.Update(EntryTableName).SetMap(record.SetMap()).
+        Where(squirrel.Eq{
+        "id": record.ID,
+    }).
+        ToSql()
+    if err != nil {
+        return err
+    }
+    stmt, err := txn.PrepareContext(ctx, sql)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func UpsertEntry(ctx context.Context, txn *sql.Tx, record Entry) error {
-	updateSQL, params, err := squirrel.Update(EntryTableName).SetMap(record.SetMap()).ToSql()
-	if err != nil {
-		return err
-	}
-	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+EntryTableName+" SET ")
-	query, params, err := squirrel.Insert(EntryTableName).Columns(EntryColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
-	if err != nil {
-		return err
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    updateSQL, params, err := squirrel.Update(EntryTableName).SetMap(record.SetMap()).ToSql()
+    if err != nil {
+        return err
+    }
+    updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+EntryTableName+" SET ")
+    query, params, err := squirrel.Insert(EntryTableName).Columns(EntryColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+    if err != nil {
+        return err
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
-func DeleteEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx, date **time.Time, spot_id *string, university_id *string) error {
-	eq := squirrel.Eq{}
-	if date != nil {
-		eq["date"] = *date
-	}
-	if spot_id != nil {
-		eq["spot_id"] = *spot_id
-	}
-	if university_id != nil {
-		eq["university_id"] = *university_id
-	}
+func DeleteEntryByDateAndSpotIDAndUniversityID(ctx context.Context, txn *sql.Tx, date **time.Time,spot_id *string,university_id *string) error {
+    eq := squirrel.Eq{}
+    if date != nil {
+        eq["date"] = *date
+    }
+    if spot_id != nil {
+        eq["spot_id"] = *spot_id
+    }
+    if university_id != nil {
+        eq["university_id"] = *university_id
+    }
 
-	query, params, err := squirrel.
-		Delete(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    query, params, err := squirrel.
+        Delete(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
-func DeleteOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *string, date **time.Time) error {
-	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
-	}
-	if date != nil {
-		eq["date"] = *date
-	}
+func DeleteOneEntryByUserIDAndDate(ctx context.Context, txn *sql.Tx, user_id *string,date **time.Time) error {
+    eq := squirrel.Eq{}
+    if user_id != nil {
+        eq["user_id"] = *user_id
+    }
+    if date != nil {
+        eq["date"] = *date
+    }
 
-	query, params, err := squirrel.
-		Delete(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    query, params, err := squirrel.
+        Delete(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func DeleteEntryByUserID(ctx context.Context, txn *sql.Tx, user_id *string) error {
-	eq := squirrel.Eq{}
-	if user_id != nil {
-		eq["user_id"] = *user_id
-	}
+    eq := squirrel.Eq{}
+    if user_id != nil {
+        eq["user_id"] = *user_id
+    }
 
-	query, params, err := squirrel.
-		Delete(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    query, params, err := squirrel.
+        Delete(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func DeleteOneEntryByID(ctx context.Context, txn *sql.Tx, id *string) error {
-	eq := squirrel.Eq{}
-	if id != nil {
-		eq["id"] = *id
-	}
+    eq := squirrel.Eq{}
+    if id != nil {
+        eq["id"] = *id
+    }
 
-	query, params, err := squirrel.
-		Delete(EntryTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    query, params, err := squirrel.
+        Delete(EntryTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
+
