@@ -308,55 +308,6 @@
         },
         {
           "type": "table",
-          "name": "prefectures",
-          "columns": [
-            {
-              "name": "id",
-              "datatype": {
-                "type": "char",
-                "prec": 36
-              },
-              "is_primary": true
-            },
-            {
-              "name": "name",
-              "datatype": {
-                "type": "varchar",
-                "prec": 128
-              }
-            }
-          ],
-          "primary_keys": [
-            {
-              "name": "id",
-              "datatype": {
-                "type": "char",
-                "prec": 36
-              },
-              "is_primary": true
-            }
-          ],
-          "indexes": [
-            {
-              "name": "prefectures_id_pkey",
-              "fields": [
-                {
-                  "name": "id",
-                  "datatype": {
-                    "type": "char",
-                    "prec": 36
-                  },
-                  "is_primary": true
-                }
-              ],
-              "is_unique": true,
-              "is_primary": true
-            }
-          ],
-          "manual": true
-        },
-        {
-          "type": "table",
           "name": "schema_migrations",
           "columns": [
             {

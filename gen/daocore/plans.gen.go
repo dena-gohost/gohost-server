@@ -2,287 +2,289 @@
 package daocore
 
 import (
-	"context"
-	"database/sql"
-	"strings"
-	"time"
+    "context"
+    "database/sql"
+    "strings"
+    "time"
 
-	"github.com/Masterminds/squirrel"
-
-	"github.com/dena-gohost/gohost-server/pkg/dberror"
+    "github.com/Masterminds/squirrel"
+    "github.com/dena-gohost/gohost-server/pkg/dberror"
 )
 
 const PlanTableName = "plans"
 
 var PlanAllColumns = []string{
-	"id",
-	"spot_id",
-	"university_id",
-	"date",
-	"created_at",
-	"updated_at",
+    "id",
+    "spot_id",
+    "university_id",
+    "date",
+    "created_at",
+    "updated_at",
 }
 
 var PlanColumnsWOMagics = []string{
-	"id",
-	"spot_id",
-	"university_id",
-	"date",
+    "id",
+    "spot_id",
+    "university_id",
+    "date",
 }
 
 var PlanPrimaryKeyColumns = []string{
-	"id",
+    "id",
 }
 
 type Plan struct {
-	ID           string
-	SpotID       string
-	UniversityID string
-	Date         *time.Time
-	CreatedAt    *time.Time
-	UpdatedAt    *time.Time
+    ID string
+    SpotID string
+    UniversityID string
+    Date *time.Time
+    CreatedAt *time.Time
+    UpdatedAt *time.Time
 }
 
 func (t *Plan) Values() []interface{} {
-	return []interface{}{
-		t.ID,
-		t.SpotID,
-		t.UniversityID,
-		t.Date,
-	}
+    return []interface{}{
+        t.ID,
+        t.SpotID,
+        t.UniversityID,
+        t.Date,
+    }
 }
 
 func (t *Plan) SetMap() map[string]interface{} {
-	return map[string]interface{}{
-		"id":            t.ID,
-		"spot_id":       t.SpotID,
-		"university_id": t.UniversityID,
-		"date":          t.Date,
-	}
+    return map[string]interface{}{
+        "id": t.ID,
+        "spot_id": t.SpotID,
+        "university_id": t.UniversityID,
+        "date": t.Date,
+    }
 }
 
 func (t *Plan) Ptrs() []interface{} {
-	return []interface{}{
-		&t.ID,
-		&t.SpotID,
-		&t.UniversityID,
-		&t.Date,
-		&t.CreatedAt,
-		&t.UpdatedAt,
-	}
+    return []interface{}{
+        &t.ID,
+        &t.SpotID,
+        &t.UniversityID,
+        &t.Date,
+        &t.CreatedAt,
+        &t.UpdatedAt,
+    }
 }
 
-func IteratePlan(sc interface{ Scan(...interface{}) error }) (Plan, error) {
-	t := Plan{}
-	if err := sc.Scan(t.Ptrs()...); err != nil {
-		return Plan{}, dberror.MapError(err)
-	}
-	return t, nil
+func IteratePlan(sc interface{ Scan(...interface{}) error}) (Plan, error) {
+    t := Plan{}
+    if err := sc.Scan(t.Ptrs()...); err != nil {
+        return Plan{}, dberror.MapError(err)
+    }
+    return t, nil
 }
 
 func SelectAllPlan(ctx context.Context, txn *sql.Tx) ([]*Plan, error) {
-	query, params, err := squirrel.
-		Select(PlanAllColumns...).
-		From(PlanTableName).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
+    query, params, err := squirrel.
+        Select(PlanAllColumns...).
+        From(PlanTableName).
+        ToSql()
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
 
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Plan, 0)
-	for rows.Next() {
-		t, err := IteratePlan(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
+    rows, err := stmt.QueryContext(ctx, params...)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    res := make([]*Plan, 0)
+    for rows.Next() {
+        t, err := IteratePlan(rows)
+        if err != nil {
+            return nil, dberror.MapError(err)
+        }
+        res = append(res, &t)
+    }
+    return res, nil
 }
 
-func SelectPlanBySpotIDAndDateAndUniversityID(ctx context.Context, txn *sql.Tx, spot_id *string, date **time.Time, university_id *string) ([]*Plan, error) {
-	eq := squirrel.Eq{}
-	if spot_id != nil {
-		eq["spot_id"] = *spot_id
-	}
-	if date != nil {
-		eq["date"] = *date
-	}
-	if university_id != nil {
-		eq["university_id"] = *university_id
-	}
-	query, params, err := squirrel.
-		Select(PlanAllColumns...).
-		From(PlanTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	rows, err := stmt.QueryContext(ctx, params...)
-	if err != nil {
-		return nil, dberror.MapError(err)
-	}
-	res := make([]*Plan, 0)
-	for rows.Next() {
-		t, err := IteratePlan(rows)
-		if err != nil {
-			return nil, dberror.MapError(err)
-		}
-		res = append(res, &t)
-	}
-	return res, nil
+func SelectPlanBySpotIDAndDateAndUniversityID(ctx context.Context, txn *sql.Tx, spot_id *string,date **time.Time,university_id *string) ([]*Plan, error) {
+    eq := squirrel.Eq{}
+    if spot_id != nil {
+        eq["spot_id"] = *spot_id
+    }
+    if date != nil {
+        eq["date"] = *date
+    }
+    if university_id != nil {
+        eq["university_id"] = *university_id
+    }
+    query, params, err := squirrel.
+        Select(PlanAllColumns...).
+        From(PlanTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    rows, err := stmt.QueryContext(ctx, params...)
+    if err != nil {
+        return nil, dberror.MapError(err)
+    }
+    res := make([]*Plan, 0)
+    for rows.Next() {
+        t, err := IteratePlan(rows)
+        if err != nil {
+            return nil, dberror.MapError(err)
+        }
+        res = append(res, &t)
+    }
+    return res, nil
 }
 
 func SelectOnePlanByID(ctx context.Context, txn *sql.Tx, id *string) (Plan, error) {
-	eq := squirrel.Eq{}
-	if id != nil {
-		eq["id"] = *id
-	}
-	query, params, err := squirrel.
-		Select(PlanAllColumns...).
-		From(PlanTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return Plan{}, dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return Plan{}, dberror.MapError(err)
-	}
-	return IteratePlan(stmt.QueryRowContext(ctx, params...))
+    eq := squirrel.Eq{}
+    if id != nil {
+        eq["id"] = *id
+    }
+    query, params, err := squirrel.
+        Select(PlanAllColumns...).
+        From(PlanTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return Plan{}, dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return Plan{}, dberror.MapError(err)
+    }
+    return IteratePlan(stmt.QueryRowContext(ctx, params...))
 }
 
+
+
 func InsertPlan(ctx context.Context, txn *sql.Tx, records []*Plan) error {
-	for i := range records {
-		if records[i] == nil {
-			records = append(records[:i], records[i+1:]...)
-		}
-	}
-	if len(records) == 0 {
-		return nil
-	}
-	sq := squirrel.Insert(PlanTableName).Columns(PlanColumnsWOMagics...)
-	for _, r := range records {
-		if r == nil {
-			continue
-		}
-		sq = sq.Values(r.Values()...)
-	}
-	query, params, err := sq.ToSql()
-	if err != nil {
-		return err
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    for i := range records {
+        if records[i] == nil {
+            records = append(records[:i], records[i+1:]...)
+        }
+    }
+    if len(records) == 0 {
+        return nil
+    }
+    sq := squirrel.Insert(PlanTableName).Columns(PlanColumnsWOMagics...)
+    for _, r := range records {
+        if r == nil {
+            continue
+        }
+        sq = sq.Values(r.Values()...)
+    }
+    query, params, err := sq.ToSql()
+    if err != nil {
+        return err
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func UpdatePlan(ctx context.Context, txn *sql.Tx, record Plan) error {
-	sql, params, err := squirrel.Update(PlanTableName).SetMap(record.SetMap()).
-		Where(squirrel.Eq{
-			"id": record.ID,
-		}).
-		ToSql()
-	if err != nil {
-		return err
-	}
-	stmt, err := txn.PrepareContext(ctx, sql)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    sql, params, err := squirrel.Update(PlanTableName).SetMap(record.SetMap()).
+        Where(squirrel.Eq{
+        "id": record.ID,
+    }).
+        ToSql()
+    if err != nil {
+        return err
+    }
+    stmt, err := txn.PrepareContext(ctx, sql)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func UpsertPlan(ctx context.Context, txn *sql.Tx, record Plan) error {
-	updateSQL, params, err := squirrel.Update(PlanTableName).SetMap(record.SetMap()).ToSql()
-	if err != nil {
-		return err
-	}
-	updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+PlanTableName+" SET ")
-	query, params, err := squirrel.Insert(PlanTableName).Columns(PlanColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
-	if err != nil {
-		return err
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    updateSQL, params, err := squirrel.Update(PlanTableName).SetMap(record.SetMap()).ToSql()
+    if err != nil {
+        return err
+    }
+    updateSQL = strings.TrimPrefix(updateSQL, "UPDATE "+PlanTableName+" SET ")
+    query, params, err := squirrel.Insert(PlanTableName).Columns(PlanColumnsWOMagics...).Values(record.Values()...).SuffixExpr(squirrel.Expr("ON DUPLICATE KEY UPDATE "+updateSQL, params...)).ToSql()
+    if err != nil {
+        return err
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
-func DeletePlanBySpotIDAndDateAndUniversityID(ctx context.Context, txn *sql.Tx, spot_id *string, date **time.Time, university_id *string) error {
-	eq := squirrel.Eq{}
-	if spot_id != nil {
-		eq["spot_id"] = *spot_id
-	}
-	if date != nil {
-		eq["date"] = *date
-	}
-	if university_id != nil {
-		eq["university_id"] = *university_id
-	}
+func DeletePlanBySpotIDAndDateAndUniversityID(ctx context.Context, txn *sql.Tx, spot_id *string,date **time.Time,university_id *string) error {
+    eq := squirrel.Eq{}
+    if spot_id != nil {
+        eq["spot_id"] = *spot_id
+    }
+    if date != nil {
+        eq["date"] = *date
+    }
+    if university_id != nil {
+        eq["university_id"] = *university_id
+    }
 
-	query, params, err := squirrel.
-		Delete(PlanTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    query, params, err := squirrel.
+        Delete(PlanTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
 
 func DeleteOnePlanByID(ctx context.Context, txn *sql.Tx, id *string) error {
-	eq := squirrel.Eq{}
-	if id != nil {
-		eq["id"] = *id
-	}
+    eq := squirrel.Eq{}
+    if id != nil {
+        eq["id"] = *id
+    }
 
-	query, params, err := squirrel.
-		Delete(PlanTableName).
-		Where(eq).
-		ToSql()
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	stmt, err := txn.PrepareContext(ctx, query)
-	if err != nil {
-		return dberror.MapError(err)
-	}
-	if _, err = stmt.Exec(params...); err != nil {
-		return dberror.MapError(err)
-	}
-	return nil
+    query, params, err := squirrel.
+        Delete(PlanTableName).
+        Where(eq).
+        ToSql()
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    stmt, err := txn.PrepareContext(ctx, query)
+    if err != nil {
+        return dberror.MapError(err)
+    }
+    if _, err = stmt.Exec(params...); err != nil {
+        return dberror.MapError(err)
+    }
+    return nil
 }
+

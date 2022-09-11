@@ -83,7 +83,7 @@ const minMatchNum = 3
 type spotUnivDate struct {
 	spotID       string
 	universityID string
-	date         *time.Time
+	date         time.Time
 }
 
 func Match(ctx context.Context, txn *sql.Tx) error {
@@ -97,7 +97,7 @@ func Match(ctx context.Context, txn *sql.Tx) error {
 		e := spotUnivDate{
 			spotID:       entry.SpotID,
 			universityID: entry.UniversityID,
-			date:         entry.Date,
+			date:         *entry.Date,
 		}
 		if _, ok := sud2entries[e]; !ok {
 			sud2entries[e] = make([]string, 0)
@@ -116,10 +116,11 @@ func Match(ctx context.Context, txn *sql.Tx) error {
 			ID:           id,
 			SpotID:       sud.spotID,
 			UniversityID: sud.universityID,
-			Date:         sud.date,
+			Date:         &sud.date,
 		})
 		for _, userID := range userIDs {
 			userPlans = append(userPlans, &daocore.UserPlan{
+				ID:     uuid.NewString(),
 				UserID: userID,
 				PlanID: id,
 			})
